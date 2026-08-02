@@ -142,7 +142,7 @@ public class SchematicHelper {
         // 构建区域数据
         NbtCompound regionData = new NbtCompound();
         regionData.put("BlockStatePalette", paletteNbt);
-        regionData.put("BlockData", new NbtLongArray(blockData));
+        regionData.put("BlockStates", new NbtLongArray(blockData));
         regionData.put("Entities", new NbtList());
         regionData.put("TileEntities", new NbtList());
         NbtCompound pos = new NbtCompound();

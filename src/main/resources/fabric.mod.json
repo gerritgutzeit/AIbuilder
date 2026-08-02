@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "aibuilder",
+  "version": "${version}",
+  "name": "AIbuilder",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "LGPL-3.0",
+  "icon": "assets/aibuilder/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "fabric-datagen": [
+      "cn.kaoyu666.aibuilder.client.AibuilderDataGenerator"
+    ],
+    "client": [
+      "cn.kaoyu666.aibuilder.client.AibuilderClient"
+    ],
+    "main": [
+      "cn.kaoyu666.aibuilder.Aibuilder"
+    ]
+  },
+  "mixins": [
+    "aibuilder.mixins.json",
+    {
+      "config": "aibuilder.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}

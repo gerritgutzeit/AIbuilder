@@ -3,8 +3,8 @@
   "id": "aibuilder",
   "version": "${version}",
   "name": "AIbuilder",
-  "description": "",
-  "authors": [],
+  "description": "AI驱动的Minecraft建筑生成模组，支持多种AI模型提供商生成Litematic投影文件",
+  "authors": ["Kaoyu666"],
   "contact": {},
   "license": "LGPL-3.0",
   "icon": "assets/aibuilder/icon.png",
@@ -18,6 +18,9 @@
     ],
     "main": [
       "cn.kaoyu666.aibuilder.Aibuilder"
+    ],
+    "modmenu": [
+      "cn.kaoyu666.aibuilder.client.gui.ModMenuIntegration"
     ]
   },
   "mixins": [
@@ -30,6 +33,9 @@
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric-api": "*",
-    "minecraft": "${minecraft_version}"
+    "minecraft": "${minecraft_version}",
+    "litematica": ">=0.18.0",
+    "malilib": ">=0.19.0",
+    "modmenu": ">=10.0.0"
   }
 }

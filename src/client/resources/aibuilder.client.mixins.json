@@ -4,6 +4,7 @@
   "package": "cn.kaoyu666.aibuilder.mixin.client",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "ChatSendMixin"
   ],
   "injectors": {
     "defaultRequire": 1

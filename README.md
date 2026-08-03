@@ -2,7 +2,7 @@
 
 AI-driven Minecraft building generator mod. Describe a building in chat, and AIbuilder asks an AI model to generate it, then loads the result directly into your world as a [Litematica](https://www.curseforge.com/minecraft/mc-mods/litematica) projection.
 
-[中文文档](README_zh.md)
+[中文](README_zh.md)
 
 ## Features
 
@@ -29,7 +29,7 @@ Java 21 is required.
 ## Installation
 
 1. Install [Fabric Loader](https://fabricmc.net/use/) for Minecraft 1.20.6
-2. Download `aibuilder-*.jar` from [Releases](https://gitlab.com/kaoyu666/AIbuilder/-/releases) (or build it yourself, see below)
+2. Download `aibuilder-*.jar` from [Releases](https://github.com/kaoyu555666777/AIbuilder/releases) (or build it yourself, see below)
 3. Put the jar together with Fabric API, Litematica, MaLiLib, and Mod Menu into your `.minecraft/mods` folder
 4. Launch the game
 
@@ -68,7 +68,7 @@ Model configurations are stored in `config/aibuilder_models.json`.
 ## Building from Source
 
 ```bash
-git clone https://gitlab.com/kaoyu666/AIbuilder.git
+git clone https://github.com/kaoyu555666777/AIbuilder.git
 cd AIbuilder
 ./gradlew build
 ```

@@ -257,12 +257,12 @@ public class SchematicHelper {
      */
     public static String getSystemPrompt() {
         return """
-                你是一个Minecraft建筑AI助手。用户会描述他们想要的建筑，你需要以JSON格式输出建筑数据。
+                You are a Minecraft building AI assistant. The user will describe the building they want, and you must output the building data in JSON format.
                 
-                输出格式要求（严格遵循）:
+                Output format requirements (strictly follow):
                 ```json
                 {
-                  "size": {"x": 宽度, "y": 高度, "z": 深度},
+                  "size": {"x": width, "y": height, "z": depth},
                   "blocks": [
                     {"x": 0, "y": 0, "z": 0, "block": "minecraft:stone"},
                     {"x": 1, "y": 0, "z": 0, "block": "minecraft:oak_planks"}
@@ -270,15 +270,15 @@ public class SchematicHelper {
                 }
                 ```
                 
-                规则：
-                1. 所有坐标从0开始，必须在size范围内
-                2. 使用完整的Minecraft方块ID（如 minecraft:stone, minecraft:oak_planks）
-                3. 不需要列出空气方块，未列出的位置默认为空气
-                4. 建筑应该合理、美观、结构稳定
-                5. 先简要说明你的设计思路，然后输出JSON数据
-                6. JSON数据用```json```代码块包裹
-                7. 建筑大小建议控制在 32x32x32 以内
-                8. 注意重力方块（沙子、沙砾）需要有支撑
+                Rules:
+                1. All coordinates start from 0 and must stay within the size bounds
+                2. Use full Minecraft block IDs (e.g. minecraft:stone, minecraft:oak_planks)
+                3. Do not list air blocks; unlisted positions default to air
+                4. The building should be reasonable, aesthetically pleasing, and structurally stable
+                5. First briefly explain your design approach, then output the JSON data
+                6. Wrap the JSON data in a ```json``` code block
+                7. Keep the building size within 32x32x32
+                8. Gravity-affected blocks (sand, gravel) must be supported
                 """;
     }
 }

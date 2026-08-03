@@ -3,7 +3,7 @@
   "id": "aibuilder",
   "version": "${version}",
   "name": "AIbuilder",
-  "description": "AI驱动的Minecraft建筑生成模组，支持多种AI模型提供商生成Litematic投影文件",
+  "description": "AI-driven Minecraft building generator mod that creates Litematic projection files using various AI model providers",
   "authors": ["Kaoyu666"],
   "contact": {},
   "license": "LGPL-3.0",

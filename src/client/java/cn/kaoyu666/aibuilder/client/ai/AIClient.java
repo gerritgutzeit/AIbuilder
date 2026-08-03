@@ -4,6 +4,7 @@ import cn.kaoyu666.aibuilder.Aibuilder;
 import cn.kaoyu666.aibuilder.client.config.ModelConfig;
 import cn.kaoyu666.aibuilder.client.config.ProviderType;
 import com.google.gson.*;
+import net.minecraft.client.resource.language.I18n;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -69,19 +70,19 @@ public class AIClient {
 
                 HttpResponse<String> response = HTTP_CLIENT.send(reqBuilder.build(), HttpResponse.BodyHandlers.ofString());
                 if (response.statusCode() != 200) {
-                    return new AIResponse("", "API请求失败: HTTP " + response.statusCode() + "\n" + response.body(), false);
+                    return new AIResponse("", I18n.translate("aibuilder.error.http", response.statusCode(), response.body()), false);
                 }
 
                 return parseChatResponse(response.body(), model.getProviderType());
             } catch (Exception e) {
                 Aibuilder.LOGGER.error("Error sending chat request", e);
-                return new AIResponse("", "请求异常: " + e.getMessage(), false);
+                return new AIResponse("", I18n.translate("aibuilder.error.request_exception", e.getMessage()), false);
             }
         });
     }
 
     private static void addAuthHeaders(HttpRequest.Builder builder, ProviderType provider, String apiKey) {
-        if (provider == ProviderType.CLAUDE) {
+        if (provider.isAnthropicFormat()) {
             builder.header("x-api-key", apiKey);
             builder.header("anthropic-version", "2023-06-01");
         } else {
@@ -93,8 +94,8 @@ public class AIClient {
         ProviderType provider = model.getProviderType();
         JsonObject root = new JsonObject();
 
-        if (provider == ProviderType.CLAUDE) {
-            // Anthropic Claude API 格式
+        if (provider.isAnthropicFormat()) {
+            // Anthropic Messages API 格式
             root.addProperty("model", model.getModelName());
             root.addProperty("max_tokens", 8192);
             root.addProperty("system", systemPrompt);
@@ -132,8 +133,8 @@ public class AIClient {
         try {
             JsonObject json = JsonParser.parseString(responseBody).getAsJsonObject();
 
-            if (provider == ProviderType.CLAUDE) {
-                // Claude 模型列表格式
+            if (provider.isAnthropicFormat()) {
+                // Anthropic 模型列表格式
                 if (json.has("data")) {
                     for (JsonElement el : json.getAsJsonArray("data")) {
                         JsonObject obj = el.getAsJsonObject();
@@ -170,19 +171,23 @@ public class AIClient {
             String thinking = "";
             String content = "";
 
-            if (provider == ProviderType.CLAUDE) {
-                // Claude 响应格式
+            if (provider.isAnthropicFormat()) {
+                // Anthropic 响应格式
                 if (json.has("content")) {
                     JsonArray contentArr = json.getAsJsonArray("content");
                     StringBuilder sb = new StringBuilder();
+                    StringBuilder thinkingSb = new StringBuilder();
                     for (JsonElement el : contentArr) {
                         JsonObject block = el.getAsJsonObject();
                         String type = block.get("type").getAsString();
                         if ("text".equals(type)) {
                             sb.append(block.get("text").getAsString());
+                        } else if ("thinking".equals(type) && block.has("thinking")) {
+                            thinkingSb.append(block.get("thinking").getAsString());
                         }
                     }
                     content = sb.toString();
+                    thinking = thinkingSb.toString();
                 }
             } else {
                 // OpenAI 兼容格式
@@ -211,7 +216,7 @@ public class AIClient {
             return parsed;
         } catch (Exception e) {
             Aibuilder.LOGGER.error("Error parsing chat response", e);
-            return new AIResponse("", "解析响应失败: " + e.getMessage(), false);
+            return new AIResponse("", I18n.translate("aibuilder.error.parse_response", e.getMessage()), false);
         }
     }
 

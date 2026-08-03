@@ -26,7 +26,7 @@ public class AddProviderScreen extends Screen {
     private List<String> fetchedModels = new ArrayList<>();
     private String selectedModel = null;
     private boolean fetching = false;
-    private String statusMessage = "";
+    private Text statusMessage = Text.empty();
     private Formatting statusFormat = Formatting.WHITE;
 
     // 输入框
@@ -45,7 +45,7 @@ public class AddProviderScreen extends Screen {
     private ButtonWidget modelSelectBtn;
 
     public AddProviderScreen(Screen parent) {
-        super(Text.literal("添加AI模型"));
+        super(Text.translatable("aibuilder.add.title"));
         this.parent = parent;
     }
 
@@ -92,12 +92,12 @@ public class AddProviderScreen extends Screen {
 
         y += ((providers.length + cols - 1) / cols) * 22 + 15;
 
-        // 自定义URL输入（仅CUSTOM时可见）
-        if (selectedProvider == ProviderType.CUSTOM) {
+        // 自定义URL输入（无默认地址的提供商可见）
+        if (selectedProvider != null && selectedProvider.needsCustomUrl()) {
             customUrlField = new TextFieldWidget(this.textRenderer, centerX - fullWidth / 2, y, fullWidth, 20, Text.literal("API Base URL"));
             customUrlField.setMaxLength(512);
             customUrlField.setText(this.customUrlText);
-            customUrlField.setPlaceholder(Text.literal("输入API基础地址，如 https://your-api.com/v1"));
+            customUrlField.setPlaceholder(Text.translatable("aibuilder.add.url_placeholder"));
             customUrlField.setChangedListener(s -> this.customUrlText = s);
             addDrawableChild(customUrlField);
             y += spacing + 5;
@@ -107,15 +107,15 @@ public class AddProviderScreen extends Screen {
         apiKeyField = new TextFieldWidget(this.textRenderer, centerX - fullWidth / 2, y, fullWidth, 20, Text.literal("API Key"));
         apiKeyField.setMaxLength(512);
         apiKeyField.setText(this.apiKeyText);
-        apiKeyField.setPlaceholder(Text.literal("输入你的API Key"));
+        apiKeyField.setPlaceholder(Text.translatable("aibuilder.add.apikey_placeholder"));
         apiKeyField.setChangedListener(s -> this.apiKeyText = s);
         addDrawableChild(apiKeyField);
         y += spacing;
 
         // 配置名称
-        nameField = new TextFieldWidget(this.textRenderer, centerX - fullWidth / 2, y, fullWidth, 20, Text.literal("名称"));
+        nameField = new TextFieldWidget(this.textRenderer, centerX - fullWidth / 2, y, fullWidth, 20, Text.translatable("aibuilder.add.name_field"));
         nameField.setMaxLength(64);
-        nameField.setPlaceholder(Text.literal("给此配置起个名字（可选）"));
+        nameField.setPlaceholder(Text.translatable("aibuilder.add.name_placeholder"));
         if (!nameText.isEmpty()) {
             nameField.setText(nameText);
         } else if (selectedProvider != null) {
@@ -127,7 +127,7 @@ public class AddProviderScreen extends Screen {
 
         // 获取模型列表按钮
         fetchModelsBtn = ButtonWidget.builder(
-                        Text.literal(fetching ? "获取中..." : "获取模型列表"),
+                        Text.translatable(fetching ? "aibuilder.add.fetching" : "aibuilder.add.fetch_models"),
                         btn -> fetchModels())
                 .dimensions(centerX - fullWidth / 2, y, fullWidth, 20)
                 .build();
@@ -137,11 +137,14 @@ public class AddProviderScreen extends Screen {
 
         // 模型选择按钮
         if (!fetchedModels.isEmpty()) {
-            String modelLabel = selectedModel != null ? selectedModel : "点击选择模型";
+            String modelLabel = selectedModel != null ? truncate(selectedModel, 30) : null;
             Formatting modelFormat = selectedModel != null ? Formatting.GREEN : Formatting.YELLOW;
+            Text modelBtnText = selectedModel != null
+                    ? Text.translatable("aibuilder.add.model", modelLabel).formatted(modelFormat)
+                    : Text.translatable("aibuilder.add.model_none").formatted(modelFormat);
 
             modelSelectBtn = ButtonWidget.builder(
-                            Text.literal("模型: " + truncate(modelLabel, 30)).formatted(modelFormat),
+                            modelBtnText,
                             btn -> {
                                 if (client != null) {
                                     client.setScreen(new ModelSelectScreen(this, fetchedModels, model -> {
@@ -158,7 +161,7 @@ public class AddProviderScreen extends Screen {
 
         // 保存按钮
         saveBtn = ButtonWidget.builder(
-                        Text.literal("保存配置").formatted(Formatting.GREEN),
+                        Text.translatable("aibuilder.add.save").formatted(Formatting.GREEN),
                         btn -> saveModel())
                 .dimensions(centerX - halfWidth / 2, y, halfWidth, 20)
                 .build();
@@ -167,7 +170,7 @@ public class AddProviderScreen extends Screen {
 
         // 返回按钮
         addDrawableChild(ButtonWidget.builder(
-                        Text.literal("← 返回"),
+                        Text.translatable("aibuilder.ui.back"),
                         btn -> close())
                 .dimensions(10, 10, 60, 20)
                 .build());
@@ -177,10 +180,10 @@ public class AddProviderScreen extends Screen {
         if (selectedProvider == null) return;
 
         String apiKey = this.apiKeyText;
-        String baseUrl = selectedProvider == ProviderType.CUSTOM ? this.customUrlText : "";
+        String baseUrl = selectedProvider.needsCustomUrl() ? this.customUrlText : "";
 
         fetching = true;
-        statusMessage = "正在获取模型列表...";
+        statusMessage = Text.translatable("aibuilder.add.fetching_status");
         statusFormat = Formatting.YELLOW;
         init();
 
@@ -188,11 +191,11 @@ public class AddProviderScreen extends Screen {
                 .thenAccept(models -> {
                     fetching = false;
                     if (models.isEmpty()) {
-                        statusMessage = "未获取到模型，请检查API Key和URL";
+                        statusMessage = Text.translatable("aibuilder.add.fetch_empty");
                         statusFormat = Formatting.RED;
                     } else {
                         fetchedModels = new ArrayList<>(models);
-                        statusMessage = "获取到 " + models.size() + " 个模型";
+                        statusMessage = Text.translatable("aibuilder.add.fetch_success", models.size());
                         statusFormat = Formatting.GREEN;
                         if (!models.isEmpty()) {
                             selectedModel = models.get(0);
@@ -204,7 +207,7 @@ public class AddProviderScreen extends Screen {
                 })
                 .exceptionally(e -> {
                     fetching = false;
-                    statusMessage = "获取失败: " + e.getMessage();
+                    statusMessage = Text.translatable("aibuilder.add.fetch_failed", e.getMessage());
                     statusFormat = Formatting.RED;
                     if (client != null) {
                         client.execute(() -> init());
@@ -218,12 +221,12 @@ public class AddProviderScreen extends Screen {
 
         String name = !nameText.isEmpty() ? nameText : selectedProvider.getDisplayName();
         String apiKey = this.apiKeyText;
-        String baseUrl = selectedProvider == ProviderType.CUSTOM ? this.customUrlText : "";
+        String baseUrl = selectedProvider.needsCustomUrl() ? this.customUrlText : "";
 
         ModelConfig config = new ModelConfig(name, selectedProvider, baseUrl, apiKey, selectedModel);
         AIModelConfig.getInstance().addModel(config);
 
-        statusMessage = "已保存: " + name;
+        statusMessage = Text.translatable("aibuilder.add.saved", name);
         statusFormat = Formatting.GREEN;
 
         if (client != null) {
@@ -240,20 +243,20 @@ public class AddProviderScreen extends Screen {
 
         // 标题
         context.drawCenteredTextWithShadow(this.textRenderer,
-                Text.literal("添加AI模型").formatted(Formatting.GOLD, Formatting.BOLD),
+                Text.translatable("aibuilder.add.title").formatted(Formatting.GOLD, Formatting.BOLD),
                 centerX, 12, 0xFFFFFF);
 
         // 步骤提示
         if (selectedProvider == null) {
             context.drawCenteredTextWithShadow(this.textRenderer,
-                    Text.literal("① 请选择AI模型提供商").formatted(Formatting.AQUA),
+                    Text.translatable("aibuilder.add.step1").formatted(Formatting.AQUA),
                     centerX, 25, 0xFFFFFF);
         }
 
         // 状态消息
-        if (!statusMessage.isEmpty()) {
+        if (!statusMessage.getString().isEmpty()) {
             context.drawCenteredTextWithShadow(this.textRenderer,
-                    Text.literal(statusMessage).formatted(statusFormat),
+                    statusMessage.copy().formatted(statusFormat),
                     centerX, this.height - 20, 0xFFFFFF);
         }
     }

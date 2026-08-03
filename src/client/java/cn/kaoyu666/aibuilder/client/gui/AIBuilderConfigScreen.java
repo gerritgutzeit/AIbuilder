@@ -19,7 +19,7 @@ public class AIBuilderConfigScreen extends Screen {
     private int scrollOffset = 0;
 
     public AIBuilderConfigScreen(Screen parent) {
-        super(Text.literal("AIbuilder 配置"));
+        super(Text.translatable("aibuilder.config.title"));
         this.parent = parent;
     }
 
@@ -39,7 +39,7 @@ public class AIBuilderConfigScreen extends Screen {
 
         // 添加模型按钮
         addDrawableChild(ButtonWidget.builder(
-                        Text.literal("+ 添加AI模型"),
+                        Text.translatable("aibuilder.config.add_model"),
                         btn -> {
                             if (client != null) {
                                 client.setScreen(new AddProviderScreen(this));
@@ -88,13 +88,13 @@ public class AIBuilderConfigScreen extends Screen {
         // 翻页按钮（如果模型多）
         if (models.size() > maxVisible) {
             int navY = listStartY + maxVisible * spacing + 5;
-            addDrawableChild(ButtonWidget.builder(Text.literal("▲ 上一页"), btn -> {
+            addDrawableChild(ButtonWidget.builder(Text.translatable("aibuilder.ui.prev_page"), btn -> {
                         scrollOffset = Math.max(0, scrollOffset - maxVisible);
                         init();
                     })
                     .dimensions(centerX - buttonWidth - 5, navY, buttonWidth, buttonHeight)
                     .build());
-            addDrawableChild(ButtonWidget.builder(Text.literal("▼ 下一页"), btn -> {
+            addDrawableChild(ButtonWidget.builder(Text.translatable("aibuilder.ui.next_page"), btn -> {
                         scrollOffset = Math.min(models.size() - maxVisible, scrollOffset + maxVisible);
                         init();
                     })
@@ -109,7 +109,7 @@ public class AIBuilderConfigScreen extends Screen {
 
         // 关闭按钮
         addDrawableChild(ButtonWidget.builder(
-                        Text.literal("关闭"),
+                        Text.translatable("aibuilder.ui.close"),
                         btn -> close())
                 .dimensions(centerX - 100, this.height - 30, 200, buttonHeight)
                 .build());
@@ -124,24 +124,24 @@ public class AIBuilderConfigScreen extends Screen {
 
         // 标题
         context.drawCenteredTextWithShadow(this.textRenderer,
-                Text.literal("AIbuilder - AI模型配置").formatted(Formatting.GOLD, Formatting.BOLD),
+                Text.translatable("aibuilder.config.header").formatted(Formatting.GOLD, Formatting.BOLD),
                 centerX, 15, 0xFFFFFF);
 
         // 当前激活模型提示
         ModelConfig active = AIModelConfig.getInstance().getActiveModel();
         if (active != null) {
             context.drawCenteredTextWithShadow(this.textRenderer,
-                    Text.literal("当前使用: " + active.getName()).formatted(Formatting.AQUA),
+                    Text.translatable("aibuilder.config.current", active.getName()).formatted(Formatting.AQUA),
                     centerX, this.height - 50, 0xFFFFFF);
         }
 
         // 无模型提示
         if (AIModelConfig.getInstance().getModels().isEmpty()) {
             context.drawCenteredTextWithShadow(this.textRenderer,
-                    Text.literal("尚未添加任何AI模型").formatted(Formatting.GRAY),
+                    Text.translatable("aibuilder.config.empty").formatted(Formatting.GRAY),
                     centerX, this.height / 2 - 20, 0xFFFFFF);
             context.drawCenteredTextWithShadow(this.textRenderer,
-                    Text.literal("点击上方「添加AI模型」按钮开始配置").formatted(Formatting.DARK_GRAY),
+                    Text.translatable("aibuilder.config.empty_hint").formatted(Formatting.DARK_GRAY),
                     centerX, this.height / 2, 0xFFFFFF);
         }
     }

@@ -19,7 +19,7 @@ public class ModelSelectScreen extends Screen {
     private int scrollOffset = 0;
 
     public ModelSelectScreen(Screen parent, List<String> models, Consumer<String> onSelect) {
-        super(Text.literal("选择模型"));
+        super(Text.translatable("aibuilder.select.title"));
         this.parent = parent;
         this.models = models;
         this.onSelect = onSelect;
@@ -53,13 +53,13 @@ public class ModelSelectScreen extends Screen {
         // 翻页
         if (models.size() > maxVisible) {
             int navY = startY + maxVisible * spacing + 5;
-            addDrawableChild(ButtonWidget.builder(Text.literal("▲ 上一页"), btn -> {
+            addDrawableChild(ButtonWidget.builder(Text.translatable("aibuilder.ui.prev_page"), btn -> {
                         scrollOffset = Math.max(0, scrollOffset - maxVisible);
                         init();
                     })
                     .dimensions(centerX - buttonWidth - 5, navY, buttonWidth, buttonHeight)
                     .build());
-            addDrawableChild(ButtonWidget.builder(Text.literal("▼ 下一页"), btn -> {
+            addDrawableChild(ButtonWidget.builder(Text.translatable("aibuilder.ui.next_page"), btn -> {
                         scrollOffset = Math.min(models.size() - maxVisible, scrollOffset + maxVisible);
                         init();
                     })
@@ -69,7 +69,7 @@ public class ModelSelectScreen extends Screen {
 
         // 返回按钮
         addDrawableChild(ButtonWidget.builder(
-                        Text.literal("← 返回"),
+                        Text.translatable("aibuilder.ui.back"),
                         btn -> close())
                 .dimensions(10, 10, 60, 20)
                 .build());
@@ -83,11 +83,11 @@ public class ModelSelectScreen extends Screen {
         int centerX = this.width / 2;
 
         context.drawCenteredTextWithShadow(this.textRenderer,
-                Text.literal("选择AI模型").formatted(Formatting.GOLD, Formatting.BOLD),
+                Text.translatable("aibuilder.select.header").formatted(Formatting.GOLD, Formatting.BOLD),
                 centerX, 15, 0xFFFFFF);
 
         context.drawCenteredTextWithShadow(this.textRenderer,
-                Text.literal("共 " + models.size() + " 个可用模型").formatted(Formatting.GRAY),
+                Text.translatable("aibuilder.select.count", models.size()).formatted(Formatting.GRAY),
                 centerX, 28, 0xFFFFFF);
     }
 

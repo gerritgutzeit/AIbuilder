@@ -6,6 +6,7 @@ import cn.kaoyu666.aibuilder.client.config.AIModelConfig;
 import cn.kaoyu666.aibuilder.client.config.ModelConfig;
 import cn.kaoyu666.aibuilder.client.schematic.SchematicHelper;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -39,28 +40,32 @@ public class BuilderMode {
 
         if (active) {
             client.player.sendMessage(
-                    Text.literal("[AIbuilder] 已进入建筑生成模式！").formatted(Formatting.GREEN)
-                            .append(Text.literal("\n请在聊天框输入建筑描述，按回车发送给AI").formatted(Formatting.GRAY))
-                            .append(Text.literal("\n输入 /aibuilder 退出此模式").formatted(Formatting.GRAY)),
+                    Text.translatable("aibuilder.prefix").formatted(Formatting.GREEN)
+                            .append(Text.translatable("aibuilder.mode.entered").formatted(Formatting.GREEN))
+                            .append(Text.literal("\n").append(Text.translatable("aibuilder.mode.entered.hint1").formatted(Formatting.GRAY)))
+                            .append(Text.literal("\n").append(Text.translatable("aibuilder.mode.entered.hint2").formatted(Formatting.GRAY))),
                     false
             );
 
             ModelConfig model = AIModelConfig.getInstance().getActiveModel();
             if (model == null) {
                 client.player.sendMessage(
-                        Text.literal("[AIbuilder] ⚠ 尚未配置模型！请在ModMenu中添加AI模型配置").formatted(Formatting.RED),
+                        Text.translatable("aibuilder.prefix").formatted(Formatting.RED)
+                                .append(Text.translatable("aibuilder.mode.no_model").formatted(Formatting.RED)),
                         false
                 );
             } else {
                 client.player.sendMessage(
-                        Text.literal("[AIbuilder] 当前模型: ").formatted(Formatting.YELLOW)
+                        Text.translatable("aibuilder.prefix").formatted(Formatting.YELLOW)
+                                .append(Text.translatable("aibuilder.mode.current_model").formatted(Formatting.YELLOW))
                                 .append(Text.literal(model.toString()).formatted(Formatting.AQUA)),
                         false
                 );
             }
         } else {
             client.player.sendMessage(
-                    Text.literal("[AIbuilder] 已退出建筑生成模式").formatted(Formatting.YELLOW),
+                    Text.translatable("aibuilder.prefix").formatted(Formatting.YELLOW)
+                            .append(Text.translatable("aibuilder.mode.exited").formatted(Formatting.YELLOW)),
                     false
             );
         }
@@ -78,7 +83,8 @@ public class BuilderMode {
 
         if (processing.get()) {
             client.player.sendMessage(
-                    Text.literal("[AIbuilder] 正在处理上一个请求，请稍候...").formatted(Formatting.YELLOW),
+                    Text.translatable("aibuilder.prefix").formatted(Formatting.YELLOW)
+                            .append(Text.translatable("aibuilder.mode.processing").formatted(Formatting.YELLOW)),
                     false
             );
             return true;
@@ -87,7 +93,8 @@ public class BuilderMode {
         ModelConfig model = AIModelConfig.getInstance().getActiveModel();
         if (model == null) {
             client.player.sendMessage(
-                    Text.literal("[AIbuilder] ⚠ 请先在ModMenu中配置AI模型").formatted(Formatting.RED),
+                    Text.translatable("aibuilder.prefix").formatted(Formatting.RED)
+                            .append(Text.translatable("aibuilder.mode.configure_first").formatted(Formatting.RED)),
                     false
             );
             return true;
@@ -97,10 +104,8 @@ public class BuilderMode {
         processing.set(true);
 
         client.player.sendMessage(
-                Text.literal("[AIbuilder] ").formatted(Formatting.GREEN)
-                        .append(Text.literal("正在生成建筑: ").formatted(Formatting.WHITE))
-                        .append(Text.literal(message).formatted(Formatting.GOLD))
-                        .append(Text.literal(" ...请稍候").formatted(Formatting.GRAY)),
+                Text.translatable("aibuilder.prefix").formatted(Formatting.GREEN)
+                        .append(Text.translatable("aibuilder.mode.generating", message).formatted(Formatting.WHITE)),
                 false
         );
 
@@ -120,8 +125,8 @@ public class BuilderMode {
                             // 分段显示思考内容（避免过长）
                             String[] lines = thinkingText.split("\n");
                             client.player.sendMessage(
-                                    Text.literal("[AIbuilder] ").formatted(Formatting.GREEN)
-                                            .append(Text.literal("--- AI 思考过程 ---").formatted(Formatting.DARK_GRAY)),
+                                    Text.translatable("aibuilder.prefix").formatted(Formatting.GREEN)
+                                            .append(Text.translatable("aibuilder.mode.thinking_header").formatted(Formatting.DARK_GRAY)),
                                     false
                             );
                             for (String line : lines) {
@@ -141,21 +146,23 @@ public class BuilderMode {
 
                             if (loaded) {
                                 client.player.sendMessage(
-                                        Text.literal("[AIbuilder] ").formatted(Formatting.GREEN)
-                                                .append(Text.literal("✓ 建筑已生成！投影已加载在你前方").formatted(Formatting.GREEN))
-                                                .append(Text.literal("\n使用Litematica快捷键调整投影位置").formatted(Formatting.GRAY)),
+                                        Text.translatable("aibuilder.prefix").formatted(Formatting.GREEN)
+                                                .append(Text.translatable("aibuilder.mode.build_done").formatted(Formatting.GREEN))
+                                                .append(Text.literal("\n").append(Text.translatable("aibuilder.mode.build_done.hint").formatted(Formatting.GRAY))),
                                         false
                                 );
                             } else {
                                 client.player.sendMessage(
-                                        Text.literal("[AIbuilder] ✗ 加载投影失败，请查看日志").formatted(Formatting.RED),
+                                        Text.translatable("aibuilder.prefix").formatted(Formatting.RED)
+                                                .append(Text.translatable("aibuilder.mode.load_failed").formatted(Formatting.RED)),
                                         false
                                 );
                             }
                         } else {
                             client.player.sendMessage(
-                                    Text.literal("[AIbuilder] ✗ AI生成失败").formatted(Formatting.RED)
-                                            .append(Text.literal("\n" + (response.content() != null ? response.content() : "未知错误")).formatted(Formatting.GRAY)),
+                                    Text.translatable("aibuilder.prefix").formatted(Formatting.RED)
+                                            .append(Text.translatable("aibuilder.mode.generate_failed").formatted(Formatting.RED))
+                                            .append(Text.literal("\n" + (response.content() != null ? response.content() : I18n.translate("aibuilder.mode.unknown_error"))).formatted(Formatting.GRAY)),
                                     false
                             );
                         }
@@ -166,7 +173,8 @@ public class BuilderMode {
                         processing.set(false);
                         if (client.player != null) {
                             client.player.sendMessage(
-                                    Text.literal("[AIbuilder] ✗ 请求异常: " + e.getMessage()).formatted(Formatting.RED),
+                                    Text.translatable("aibuilder.prefix").formatted(Formatting.RED)
+                                            .append(Text.translatable("aibuilder.mode.request_exception", e.getMessage()).formatted(Formatting.RED)),
                                     false
                             );
                         }

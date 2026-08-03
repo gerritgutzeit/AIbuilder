@@ -29,7 +29,7 @@ AI 驱动的 Minecraft 建筑生成模组。在聊天框中描述你想要的建
 ## 安装方法
 
 1. 为 Minecraft 1.20.6 安装 [Fabric Loader](https://fabricmc.net/use/)
-2. 从 [Releases](https://gitlab.com/kaoyu666/AIbuilder/-/releases) 下载 `aibuilder-*.jar`(或自行构建,见下文)
+2. 从 [Releases](https://github.com/kaoyu555666777/AIbuilder/releases) 下载 `aibuilder-*.jar`(或自行构建,见下文)
 3. 将该 jar 与 Fabric API、Litematica、MaLiLib、Mod Menu 一起放入 `.minecraft/mods` 目录
 4. 启动游戏
 
@@ -68,7 +68,7 @@ AI 驱动的 Minecraft 建筑生成模组。在聊天框中描述你想要的建
 ## 从源码构建
 
 ```bash
-git clone https://gitlab.com/kaoyu666/AIbuilder.git
+git clone https://github.com/kaoyu555666777/AIbuilder.git
 cd AIbuilder
 ./gradlew build
 ```

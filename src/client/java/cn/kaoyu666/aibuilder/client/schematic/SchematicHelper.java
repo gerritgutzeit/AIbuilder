@@ -218,7 +218,7 @@ public class SchematicHelper {
 
         root.put("Metadata", metadata);
         root.put("Regions", regions);
-        root.putInt("MinecraftDataVersion", 3839); // 1.20.6
+        root.putInt("MinecraftDataVersion", 3578); // 1.20.2
         root.putInt("Version", 7);
         root.putInt("SubVersion", 0);
         root.put("Entities", new NbtList());
@@ -244,7 +244,7 @@ public class SchematicHelper {
             String safeName = name.replaceAll("[^a-zA-Z0-9_\\-\\u4e00-\\u9fa5]", "_");
             Path filePath = dir.resolve(safeName + ".litematic");
 
-            NbtIo.write(nbt, filePath);
+            NbtIo.write(nbt, filePath.toFile());
             Aibuilder.LOGGER.info("Saved schematic to: {}", filePath);
             return filePath;
         } catch (Exception e) {
@@ -315,3 +315,5 @@ public class SchematicHelper {
                 """;
     }
 }
+
+

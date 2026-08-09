@@ -27,6 +27,8 @@ import java.util.*;
 public class SchematicHelper {
     private static final String SCHEMATIC_DIR = "schematics";
     private static final String REGION_NAME = "AIRegion";
+    /** 建筑尺寸上限，防止 AI 输出过大尺寸导致内存暴涨 */
+    private static final int MAX_SIZE = 64;
 
     /**
      * 解析 AI 输出的 JSON 并加载为 Litematica 投影
@@ -37,12 +39,32 @@ public class SchematicHelper {
 
             // 解析尺寸
             JsonObject sizeObj = json.getAsJsonObject("size");
+            if (sizeObj == null || !sizeObj.has("x") || !sizeObj.has("y") || !sizeObj.has("z")) {
+                Aibuilder.LOGGER.error("AI schematic JSON is missing the 'size' field");
+                return false;
+            }
             int sizeX = sizeObj.get("x").getAsInt();
             int sizeY = sizeObj.get("y").getAsInt();
             int sizeZ = sizeObj.get("z").getAsInt();
 
+            // 校验尺寸：AI 可能输出非法尺寸；过大则截断，避免位打包数组过大导致内存暴涨
+            if (sizeX <= 0 || sizeY <= 0 || sizeZ <= 0) {
+                Aibuilder.LOGGER.error("AI schematic has invalid size: {}x{}x{}", sizeX, sizeY, sizeZ);
+                return false;
+            }
+            if (sizeX > MAX_SIZE || sizeY > MAX_SIZE || sizeZ > MAX_SIZE) {
+                Aibuilder.LOGGER.warn("AI schematic size {}x{}x{} exceeds the limit {}, clamping", sizeX, sizeY, sizeZ, MAX_SIZE);
+                sizeX = Math.min(sizeX, MAX_SIZE);
+                sizeY = Math.min(sizeY, MAX_SIZE);
+                sizeZ = Math.min(sizeZ, MAX_SIZE);
+            }
+
             // 解析方块数据
             JsonArray blocks = json.getAsJsonArray("blocks");
+            if (blocks == null) {
+                Aibuilder.LOGGER.error("AI schematic JSON is missing the 'blocks' field");
+                return false;
+            }
             Map<BlockPos, BlockState> blockMap = new HashMap<>();
 
             for (JsonElement el : blocks) {
@@ -52,10 +74,21 @@ public class SchematicHelper {
                 int z = block.get("z").getAsInt();
                 String blockId = block.get("block").getAsString();
 
+                // AI 可能输出越界坐标，跳过以避免位打包数组越界导致整个生成失败
+                if (x < 0 || x >= sizeX || y < 0 || y >= sizeY || z < 0 || z >= sizeZ) {
+                    Aibuilder.LOGGER.warn("Skipping out-of-bounds block at ({}, {}, {}): {}", x, y, z, blockId);
+                    continue;
+                }
+
                 BlockState state = parseBlockState(blockId);
                 if (state != null) {
                     blockMap.put(new BlockPos(x, y, z), state);
                 }
+            }
+
+            if (blockMap.isEmpty()) {
+                Aibuilder.LOGGER.error("AI schematic contains no valid blocks");
+                return false;
             }
 
             // 构建 Litematic NBT
@@ -206,7 +239,7 @@ public class SchematicHelper {
 
     private static Path saveSchematicToFile(NbtCompound nbt, String name) {
         try {
-            Path dir = Path.of(SCHEMATIC_DIR);
+            Path dir = MinecraftClient.getInstance().runDirectory.toPath().resolve(SCHEMATIC_DIR);
             Files.createDirectories(dir);
             String safeName = name.replaceAll("[^a-zA-Z0-9_\\-\\u4e00-\\u9fa5]", "_");
             Path filePath = dir.resolve(safeName + ".litematic");

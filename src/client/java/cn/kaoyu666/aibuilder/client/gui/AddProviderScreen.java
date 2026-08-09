@@ -189,28 +189,31 @@ public class AddProviderScreen extends Screen {
 
         AIClient.fetchModels(selectedProvider, baseUrl, apiKey)
                 .thenAccept(models -> {
-                    fetching = false;
-                    if (models.isEmpty()) {
-                        statusMessage = Text.translatable("aibuilder.add.fetch_empty");
-                        statusFormat = Formatting.RED;
-                    } else {
-                        fetchedModels = new ArrayList<>(models);
-                        statusMessage = Text.translatable("aibuilder.add.fetch_success", models.size());
-                        statusFormat = Formatting.GREEN;
-                        if (!models.isEmpty()) {
-                            selectedModel = models.get(0);
-                        }
-                    }
+                    // UI 状态的修改和界面刷新必须在客户端主线程执行，避免与渲染线程竞争
                     if (client != null) {
-                        client.execute(() -> init());
+                        client.execute(() -> {
+                            fetching = false;
+                            if (models.isEmpty()) {
+                                statusMessage = Text.translatable("aibuilder.add.fetch_empty");
+                                statusFormat = Formatting.RED;
+                            } else {
+                                fetchedModels = new ArrayList<>(models);
+                                statusMessage = Text.translatable("aibuilder.add.fetch_success", models.size());
+                                statusFormat = Formatting.GREEN;
+                                selectedModel = models.get(0);
+                            }
+                            init();
+                        });
                     }
                 })
                 .exceptionally(e -> {
-                    fetching = false;
-                    statusMessage = Text.translatable("aibuilder.add.fetch_failed", e.getMessage());
-                    statusFormat = Formatting.RED;
                     if (client != null) {
-                        client.execute(() -> init());
+                        client.execute(() -> {
+                            fetching = false;
+                            statusMessage = Text.translatable("aibuilder.add.fetch_failed", e.getMessage());
+                            statusFormat = Formatting.RED;
+                            init();
+                        });
                     }
                     return null;
                 });

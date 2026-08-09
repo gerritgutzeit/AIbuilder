@@ -138,8 +138,9 @@ public class AIClient {
                 if (json.has("data")) {
                     for (JsonElement el : json.getAsJsonArray("data")) {
                         JsonObject obj = el.getAsJsonObject();
-                        if (obj.has("id")) {
-                            models.add(obj.get("id").getAsString());
+                        String id = getStringOrEmpty(obj, "id");
+                        if (!id.isEmpty()) {
+                            models.add(id);
                         }
                     }
                 }
@@ -148,13 +149,11 @@ public class AIClient {
                 if (json.has("data")) {
                     for (JsonElement el : json.getAsJsonArray("data")) {
                         JsonObject obj = el.getAsJsonObject();
-                        if (obj.has("id")) {
-                            String id = obj.get("id").getAsString();
-                            // 过滤出聊天模型
-                            if (!id.contains("whisper") && !id.contains("tts") && !id.contains("dall-e")
-                                    && !id.contains("embedding") && !id.contains("moderation")) {
-                                models.add(id);
-                            }
+                        String id = getStringOrEmpty(obj, "id");
+                        // 过滤出聊天模型
+                        if (!id.isEmpty() && !id.contains("whisper") && !id.contains("tts") && !id.contains("dall-e")
+                                && !id.contains("embedding") && !id.contains("moderation")) {
+                            models.add(id);
                         }
                     }
                 }
@@ -179,11 +178,11 @@ public class AIClient {
                     StringBuilder thinkingSb = new StringBuilder();
                     for (JsonElement el : contentArr) {
                         JsonObject block = el.getAsJsonObject();
-                        String type = block.get("type").getAsString();
+                        String type = getStringOrEmpty(block, "type");
                         if ("text".equals(type)) {
-                            sb.append(block.get("text").getAsString());
-                        } else if ("thinking".equals(type) && block.has("thinking")) {
-                            thinkingSb.append(block.get("thinking").getAsString());
+                            sb.append(getStringOrEmpty(block, "text"));
+                        } else if ("thinking".equals(type)) {
+                            thinkingSb.append(getStringOrEmpty(block, "thinking"));
                         }
                     }
                     content = sb.toString();
@@ -195,15 +194,13 @@ public class AIClient {
                 JsonObject message = choice.getAsJsonObject("message");
 
                 // 提取 reasoning/thinking 内容（部分模型支持）
-                if (message.has("reasoning_content")) {
-                    thinking = message.get("reasoning_content").getAsString();
-                } else if (message.has("reasoning")) {
-                    thinking = message.get("reasoning").getAsString();
+                // 注意：部分 API 会返回 JSON null，直接 getAsString 会抛异常，需做空值保护
+                thinking = getStringOrEmpty(message, "reasoning_content");
+                if (thinking.isEmpty()) {
+                    thinking = getStringOrEmpty(message, "reasoning");
                 }
 
-                if (message.has("content")) {
-                    content = message.get("content").getAsString();
-                }
+                content = getStringOrEmpty(message, "content");
             }
 
             // 从内容中分离思考部分和建筑数据
@@ -218,6 +215,19 @@ public class AIClient {
             Aibuilder.LOGGER.error("Error parsing chat response", e);
             return new AIResponse("", I18n.translate("aibuilder.error.parse_response", e.getMessage()), false);
         }
+    }
+
+    /**
+     * 安全读取 JSON 字符串字段：字段不存在或值为 null 时返回空字符串
+     */
+    private static String getStringOrEmpty(JsonObject obj, String key) {
+        if (obj.has(key)) {
+            JsonElement el = obj.get(key);
+            if (el != null && !el.isJsonNull()) {
+                return el.getAsString();
+            }
+        }
+        return "";
     }
 
     private static AIResponse extractThinkingAndData(String fullContent) {

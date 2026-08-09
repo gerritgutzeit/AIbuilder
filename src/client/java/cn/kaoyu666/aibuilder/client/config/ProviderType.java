@@ -48,7 +48,9 @@ public enum ProviderType {
     public String getModelsEndpointUrl(String baseUrl) {
         String url = (baseUrl != null && !baseUrl.isEmpty()) ? baseUrl : defaultBaseUrl;
         if (isAnthropicFormat()) {
-            return url.replace("/v1", "") + "/v1/models";
+            // 仅去掉末尾的 /v1，replace 会替换 URL 中所有 "/v1"，可能破坏自定义代理地址
+            String base = url.endsWith("/v1") ? url.substring(0, url.length() - 3) : url;
+            return base + "/v1/models";
         }
         return url + "/models";
     }

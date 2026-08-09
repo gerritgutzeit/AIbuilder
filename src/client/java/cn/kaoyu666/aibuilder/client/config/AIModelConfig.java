@@ -72,7 +72,10 @@ public class AIModelConfig {
     public void removeModel(int index) {
         if (index >= 0 && index < models.size()) {
             models.remove(index);
-            if (activeModelIndex >= models.size()) {
+            if (index < activeModelIndex) {
+                // 删除的是激活模型之前的条目，激活索引需要左移，否则会错误地指向后一个模型
+                activeModelIndex--;
+            } else if (activeModelIndex >= models.size()) {
                 activeModelIndex = models.size() - 1;
             }
             save();

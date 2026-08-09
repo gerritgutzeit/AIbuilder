@@ -34,8 +34,9 @@
     "fabricloader": ">=${loader_version}",
     "fabric-api": "*",
     "minecraft": "${minecraft_version}",
-    "litematica": ">=0.18.0",
-    "malilib": ">=0.19.0",
-    "modmenu": ">=10.0.0"
+    "litematica": ">=0.17.4",
+    "malilib": ">=0.18.3",
+    "modmenu": ">=9.2.0"
   }
 }
+

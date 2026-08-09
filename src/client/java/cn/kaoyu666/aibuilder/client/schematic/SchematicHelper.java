@@ -218,7 +218,7 @@ public class SchematicHelper {
 
         root.put("Metadata", metadata);
         root.put("Regions", regions);
-        root.putInt("MinecraftDataVersion", 3839); // 1.20.6
+        root.putInt("MinecraftDataVersion", 3700); // 1.20.4
         root.putInt("Version", 7);
         root.putInt("SubVersion", 0);
         root.put("Entities", new NbtList());
@@ -315,3 +315,4 @@ public class SchematicHelper {
                 """;
     }
 }
+

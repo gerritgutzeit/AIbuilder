@@ -11,10 +11,11 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.*;
-import net.minecraft.registry.Registries;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.SharedConstants;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -111,7 +112,7 @@ public class SchematicHelper {
             // 处理带命名空间的 ID
             Identifier id = blockId.contains(":") ?
                     new Identifier(blockId) : new Identifier("minecraft", blockId);
-            Block block = Registries.BLOCK.get(id);
+            Block block = Registry.BLOCK.get(id);
             if (block != Blocks.AIR || "minecraft:air".equals(blockId) || "air".equals(blockId)) {
                 return block.getDefaultState();
             }
@@ -167,7 +168,7 @@ public class SchematicHelper {
         NbtList paletteNbt = new NbtList();
         for (BlockState state : palette) {
             NbtCompound entry = new NbtCompound();
-            Identifier blockId = Registries.BLOCK.getId(state.getBlock());
+            Identifier blockId = Registry.BLOCK.getId(state.getBlock());
             entry.putString("Name", blockId.toString());
             paletteNbt.add(entry);
         }
@@ -218,7 +219,7 @@ public class SchematicHelper {
 
         root.put("Metadata", metadata);
         root.put("Regions", regions);
-        root.putInt("MinecraftDataVersion", 3839); // 1.20.6
+        root.putInt("MinecraftDataVersion", SharedConstants.WORLD_VERSION); // current game data version
         root.putInt("Version", 7);
         root.putInt("SubVersion", 0);
         root.put("Entities", new NbtList());
@@ -244,7 +245,7 @@ public class SchematicHelper {
             String safeName = name.replaceAll("[^a-zA-Z0-9_\\-\\u4e00-\\u9fa5]", "_");
             Path filePath = dir.resolve(safeName + ".litematic");
 
-            NbtIo.write(nbt, filePath);
+            NbtIo.write(nbt, filePath.toFile());
             Aibuilder.LOGGER.info("Saved schematic to: {}", filePath);
             return filePath;
         } catch (Exception e) {

@@ -1,9 +1,11 @@
 package cn.kaoyu666.aibuilder.client.gui;
 
-import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 
 import java.util.List;
@@ -19,7 +21,7 @@ public class ModelSelectScreen extends Screen {
     private int scrollOffset = 0;
 
     public ModelSelectScreen(Screen parent, List<String> models, Consumer<String> onSelect) {
-        super(Text.translatable("aibuilder.select.title"));
+        super(new TranslatableText("aibuilder.select.title"));
         this.parent = parent;
         this.models = models;
         this.onSelect = onSelect;
@@ -41,54 +43,50 @@ public class ModelSelectScreen extends Screen {
             String model = models.get(i);
             int y = startY + (i - scrollOffset) * spacing;
 
-            addDrawableChild(ButtonWidget.builder(
-                            Text.literal(truncate(model, 45)),
-                            btn -> {
-                                onSelect.accept(model);
-                            })
-                    .dimensions(centerX - buttonWidth / 2, y, buttonWidth, buttonHeight)
-                    .build());
+            addDrawableChild(new ButtonWidget(centerX - buttonWidth / 2, y, buttonWidth, buttonHeight,
+                    new LiteralText(truncate(model, 45)),
+                    btn -> {
+                        onSelect.accept(model);
+                    }));
         }
 
         // 翻页
         if (models.size() > maxVisible) {
             int navY = startY + maxVisible * spacing + 5;
-            addDrawableChild(ButtonWidget.builder(Text.translatable("aibuilder.ui.prev_page"), btn -> {
+            addDrawableChild(new ButtonWidget(centerX - buttonWidth - 5, navY, buttonWidth, buttonHeight,
+                    new TranslatableText("aibuilder.ui.prev_page"),
+                    btn -> {
                         scrollOffset = Math.max(0, scrollOffset - maxVisible);
                         init();
-                    })
-                    .dimensions(centerX - buttonWidth - 5, navY, buttonWidth, buttonHeight)
-                    .build());
-            addDrawableChild(ButtonWidget.builder(Text.translatable("aibuilder.ui.next_page"), btn -> {
+                    }));
+            addDrawableChild(new ButtonWidget(centerX + 5, navY, buttonWidth, buttonHeight,
+                    new TranslatableText("aibuilder.ui.next_page"),
+                    btn -> {
                         scrollOffset = Math.min(models.size() - maxVisible, scrollOffset + maxVisible);
                         init();
-                    })
-                    .dimensions(centerX + 5, navY, buttonWidth, buttonHeight)
-                    .build());
+                    }));
         }
 
         // 返回按钮
-        addDrawableChild(ButtonWidget.builder(
-                        Text.translatable("aibuilder.ui.back"),
-                        btn -> close())
-                .dimensions(10, 10, 60, 20)
-                .build());
+        addDrawableChild(new ButtonWidget(10, 10, 60, 20,
+                new TranslatableText("aibuilder.ui.back"),
+                btn -> close()));
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context, mouseX, mouseY, delta);
-        super.render(context, mouseX, mouseY, delta);
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        renderBackground(matrices);
+        super.render(matrices, mouseX, mouseY, delta);
 
         int centerX = this.width / 2;
 
-        context.drawCenteredTextWithShadow(this.textRenderer,
-                Text.translatable("aibuilder.select.header").formatted(Formatting.GOLD, Formatting.BOLD),
-                centerX, 15, 0xFFFFFF);
+        Text header = new TranslatableText("aibuilder.select.header").formatted(Formatting.GOLD, Formatting.BOLD);
+        this.textRenderer.drawWithShadow(matrices, header,
+                centerX - this.textRenderer.getWidth(header) / 2, 15, 0xFFFFFF);
 
-        context.drawCenteredTextWithShadow(this.textRenderer,
-                Text.translatable("aibuilder.select.count", models.size()).formatted(Formatting.GRAY),
-                centerX, 28, 0xFFFFFF);
+        Text count = new TranslatableText("aibuilder.select.count", models.size()).formatted(Formatting.GRAY);
+        this.textRenderer.drawWithShadow(matrices, count,
+                centerX - this.textRenderer.getWidth(count) / 2, 28, 0xFFFFFF);
     }
 
     @Override

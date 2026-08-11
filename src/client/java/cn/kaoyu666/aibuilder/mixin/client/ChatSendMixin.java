@@ -1,7 +1,7 @@
 package cn.kaoyu666.aibuilder.mixin.client;
 
 import cn.kaoyu666.aibuilder.client.mode.BuilderMode;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.client.network.ClientPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * Mixin 拦截聊天消息发送，在 AI Builder 模式下拦截消息发送给 AI
  */
-@Mixin(ClientPlayNetworkHandler.class)
+@Mixin(ClientPlayerEntity.class)
 public class ChatSendMixin {
 
     @Inject(method = "sendChatMessage", at = @At("HEAD"), cancellable = true)

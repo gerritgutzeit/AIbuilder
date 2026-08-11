@@ -7,6 +7,6 @@ public class AibuilderDataGenerator implements DataGeneratorEntrypoint {
 
     @Override
     public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
-        FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
+        // 1.18.x 的 datagen API 不提供 createPack()，本模组无需额外数据生成
     }
 }

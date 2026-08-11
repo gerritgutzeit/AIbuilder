@@ -5,10 +5,10 @@ import cn.kaoyu666.aibuilder.client.ai.AIClient;
 import cn.kaoyu666.aibuilder.client.config.AIModelConfig;
 import cn.kaoyu666.aibuilder.client.config.ModelConfig;
 import cn.kaoyu666.aibuilder.client.schematic.SchematicHelper;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.chat.Component;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,38 +35,34 @@ public class BuilderMode {
      */
     public void toggle() {
         active = !active;
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
         if (client == null || client.player == null) return;
 
         if (active) {
-            client.player.sendMessage(
-                    Text.translatable("aibuilder.prefix").formatted(Formatting.GREEN)
-                            .append(Text.translatable("aibuilder.mode.entered").formatted(Formatting.GREEN))
-                            .append(Text.literal("\n").append(Text.translatable("aibuilder.mode.entered.hint1").formatted(Formatting.GRAY)))
-                            .append(Text.literal("\n").append(Text.translatable("aibuilder.mode.entered.hint2").formatted(Formatting.GRAY))),
-                    false
+            client.player.sendSystemMessage(
+                    Component.translatable("aibuilder.prefix").withStyle(ChatFormatting.GREEN)
+                            .append(Component.translatable("aibuilder.mode.entered").withStyle(ChatFormatting.GREEN))
+                            .append(Component.literal("\n").append(Component.translatable("aibuilder.mode.entered.hint1").withStyle(ChatFormatting.GRAY)))
+                            .append(Component.literal("\n").append(Component.translatable("aibuilder.mode.entered.hint2").withStyle(ChatFormatting.GRAY)))
             );
 
             ModelConfig model = AIModelConfig.getInstance().getActiveModel();
             if (model == null) {
-                client.player.sendMessage(
-                        Text.translatable("aibuilder.prefix").formatted(Formatting.RED)
-                                .append(Text.translatable("aibuilder.mode.no_model").formatted(Formatting.RED)),
-                        false
+                client.player.sendSystemMessage(
+                        Component.translatable("aibuilder.prefix").withStyle(ChatFormatting.RED)
+                                .append(Component.translatable("aibuilder.mode.no_model").withStyle(ChatFormatting.RED))
                 );
             } else {
-                client.player.sendMessage(
-                        Text.translatable("aibuilder.prefix").formatted(Formatting.YELLOW)
-                                .append(Text.translatable("aibuilder.mode.current_model").formatted(Formatting.YELLOW))
-                                .append(Text.literal(model.toString()).formatted(Formatting.AQUA)),
-                        false
+                client.player.sendSystemMessage(
+                        Component.translatable("aibuilder.prefix").withStyle(ChatFormatting.YELLOW)
+                                .append(Component.translatable("aibuilder.mode.current_model").withStyle(ChatFormatting.YELLOW))
+                                .append(Component.literal(model.toString()).withStyle(ChatFormatting.AQUA))
                 );
             }
         } else {
-            client.player.sendMessage(
-                    Text.translatable("aibuilder.prefix").formatted(Formatting.YELLOW)
-                            .append(Text.translatable("aibuilder.mode.exited").formatted(Formatting.YELLOW)),
-                    false
+            client.player.sendSystemMessage(
+                    Component.translatable("aibuilder.prefix").withStyle(ChatFormatting.YELLOW)
+                            .append(Component.translatable("aibuilder.mode.exited").withStyle(ChatFormatting.YELLOW))
             );
         }
     }
@@ -78,24 +74,22 @@ public class BuilderMode {
     public boolean handleChatMessage(String message) {
         if (!active) return false;
 
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
         if (client == null || client.player == null) return false;
 
         if (processing.get()) {
-            client.player.sendMessage(
-                    Text.translatable("aibuilder.prefix").formatted(Formatting.YELLOW)
-                            .append(Text.translatable("aibuilder.mode.processing").formatted(Formatting.YELLOW)),
-                    false
+            client.player.sendSystemMessage(
+                    Component.translatable("aibuilder.prefix").withStyle(ChatFormatting.YELLOW)
+                            .append(Component.translatable("aibuilder.mode.processing").withStyle(ChatFormatting.YELLOW))
             );
             return true;
         }
 
         ModelConfig model = AIModelConfig.getInstance().getActiveModel();
         if (model == null) {
-            client.player.sendMessage(
-                    Text.translatable("aibuilder.prefix").formatted(Formatting.RED)
-                            .append(Text.translatable("aibuilder.mode.configure_first").formatted(Formatting.RED)),
-                    false
+            client.player.sendSystemMessage(
+                    Component.translatable("aibuilder.prefix").withStyle(ChatFormatting.RED)
+                            .append(Component.translatable("aibuilder.mode.configure_first").withStyle(ChatFormatting.RED))
             );
             return true;
         }
@@ -103,10 +97,9 @@ public class BuilderMode {
         // 标记正在处理
         processing.set(true);
 
-        client.player.sendMessage(
-                Text.translatable("aibuilder.prefix").formatted(Formatting.GREEN)
-                        .append(Text.translatable("aibuilder.mode.generating", message).formatted(Formatting.WHITE)),
-                false
+        client.player.sendSystemMessage(
+                Component.translatable("aibuilder.prefix").withStyle(ChatFormatting.GREEN)
+                        .append(Component.translatable("aibuilder.mode.generating", message).withStyle(ChatFormatting.WHITE))
         );
 
         // 异步发送请求
@@ -124,16 +117,14 @@ public class BuilderMode {
                             String thinkingText = response.thinking();
                             // 分段显示思考内容（避免过长）
                             String[] lines = thinkingText.split("\n");
-                            client.player.sendMessage(
-                                    Text.translatable("aibuilder.prefix").formatted(Formatting.GREEN)
-                                            .append(Text.translatable("aibuilder.mode.thinking_header").formatted(Formatting.DARK_GRAY)),
-                                    false
+                            client.player.sendSystemMessage(
+                                    Component.translatable("aibuilder.prefix").withStyle(ChatFormatting.GREEN)
+                                            .append(Component.translatable("aibuilder.mode.thinking_header").withStyle(ChatFormatting.DARK_GRAY))
                             );
                             for (String line : lines) {
                                 if (!line.trim().isEmpty()) {
-                                    client.player.sendMessage(
-                                            Text.literal("  ").append(Text.literal(line).formatted(Formatting.GRAY)),
-                                            false
+                                    client.player.sendSystemMessage(
+                                            Component.literal("  ").append(Component.literal(line).withStyle(ChatFormatting.GRAY))
                                     );
                                 }
                             }
@@ -145,25 +136,22 @@ public class BuilderMode {
                             boolean loaded = SchematicHelper.loadAISchematic(response.content(), schematicName);
 
                             if (loaded) {
-                                client.player.sendMessage(
-                                        Text.translatable("aibuilder.prefix").formatted(Formatting.GREEN)
-                                                .append(Text.translatable("aibuilder.mode.build_done").formatted(Formatting.GREEN))
-                                                .append(Text.literal("\n").append(Text.translatable("aibuilder.mode.build_done.hint").formatted(Formatting.GRAY))),
-                                        false
+                                client.player.sendSystemMessage(
+                                        Component.translatable("aibuilder.prefix").withStyle(ChatFormatting.GREEN)
+                                                .append(Component.translatable("aibuilder.mode.build_done").withStyle(ChatFormatting.GREEN))
+                                                .append(Component.literal("\n").append(Component.translatable("aibuilder.mode.build_done.hint").withStyle(ChatFormatting.GRAY)))
                                 );
                             } else {
-                                client.player.sendMessage(
-                                        Text.translatable("aibuilder.prefix").formatted(Formatting.RED)
-                                                .append(Text.translatable("aibuilder.mode.load_failed").formatted(Formatting.RED)),
-                                        false
+                                client.player.sendSystemMessage(
+                                        Component.translatable("aibuilder.prefix").withStyle(ChatFormatting.RED)
+                                                .append(Component.translatable("aibuilder.mode.load_failed").withStyle(ChatFormatting.RED))
                                 );
                             }
                         } else {
-                            client.player.sendMessage(
-                                    Text.translatable("aibuilder.prefix").formatted(Formatting.RED)
-                                            .append(Text.translatable("aibuilder.mode.generate_failed").formatted(Formatting.RED))
-                                            .append(Text.literal("\n" + (response.content() != null ? response.content() : I18n.translate("aibuilder.mode.unknown_error"))).formatted(Formatting.GRAY)),
-                                    false
+                            client.player.sendSystemMessage(
+                                    Component.translatable("aibuilder.prefix").withStyle(ChatFormatting.RED)
+                                            .append(Component.translatable("aibuilder.mode.generate_failed").withStyle(ChatFormatting.RED))
+                                            .append(Component.literal("\n" + (response.content() != null ? response.content() : I18n.get("aibuilder.mode.unknown_error"))).withStyle(ChatFormatting.GRAY))
                             );
                         }
                     });
@@ -172,10 +160,9 @@ public class BuilderMode {
                     client.execute(() -> {
                         processing.set(false);
                         if (client.player != null) {
-                            client.player.sendMessage(
-                                    Text.translatable("aibuilder.prefix").formatted(Formatting.RED)
-                                            .append(Text.translatable("aibuilder.mode.request_exception", e.getMessage()).formatted(Formatting.RED)),
-                                    false
+                            client.player.sendSystemMessage(
+                                    Component.translatable("aibuilder.prefix").withStyle(ChatFormatting.RED)
+                                            .append(Component.translatable("aibuilder.mode.request_exception", e.getMessage()).withStyle(ChatFormatting.RED))
                             );
                         }
                     });

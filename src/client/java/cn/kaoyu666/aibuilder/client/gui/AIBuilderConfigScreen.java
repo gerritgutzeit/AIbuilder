@@ -2,11 +2,11 @@ package cn.kaoyu666.aibuilder.client.gui;
 
 import cn.kaoyu666.aibuilder.client.config.AIModelConfig;
 import cn.kaoyu666.aibuilder.client.config.ModelConfig;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
 import java.util.List;
 
@@ -19,14 +19,14 @@ public class AIBuilderConfigScreen extends Screen {
     private int scrollOffset = 0;
 
     public AIBuilderConfigScreen(Screen parent) {
-        super(Text.translatable("aibuilder.config.title"));
+        super(Component.translatable("aibuilder.config.title"));
         this.parent = parent;
     }
 
     @Override
     protected void init() {
         super.init();
-        clearChildren();
+        clearWidgets();
 
         int centerX = this.width / 2;
         int startY = 40;
@@ -34,18 +34,15 @@ public class AIBuilderConfigScreen extends Screen {
         int buttonHeight = 20;
         int spacing = 24;
 
-        // 标题
-        // (在 render 中绘制)
-
         // 添加模型按钮
-        addDrawableChild(ButtonWidget.builder(
-                        Text.translatable("aibuilder.config.add_model"),
+        addRenderableWidget(Button.builder(
+                        Component.translatable("aibuilder.config.add_model"),
                         btn -> {
-                            if (client != null) {
-                                client.setScreen(new AddProviderScreen(this));
+                            if (minecraft != null) {
+                                minecraft.setScreen(new AddProviderScreen(this));
                             }
                         })
-                .dimensions(centerX - buttonWidth / 2, startY, buttonWidth, buttonHeight)
+                .bounds(centerX - buttonWidth / 2, startY, buttonWidth, buttonHeight)
                 .build());
 
         // 模型列表
@@ -63,93 +60,88 @@ public class AIBuilderConfigScreen extends Screen {
             if (label.length() > 40) label = label.substring(0, 37) + "...";
 
             final int index = i;
-            Text btnText = Text.literal((isActive ? "▶ " : "  ") + label)
-                    .formatted(isActive ? Formatting.GREEN : Formatting.WHITE);
+            Component btnText = Component.literal((isActive ? "▶ " : "  ") + label)
+                    .withStyle(isActive ? ChatFormatting.GREEN : ChatFormatting.WHITE);
 
             // 选择按钮
-            addDrawableChild(ButtonWidget.builder(btnText, btn -> {
+            addRenderableWidget(Button.builder(btnText, btn -> {
                         AIModelConfig.getInstance().setActiveModelIndex(index);
                         init(); // 刷新界面
                     })
-                    .dimensions(centerX - buttonWidth / 2 - 30, y, buttonWidth - 20, buttonHeight)
+                    .bounds(centerX - buttonWidth / 2 - 30, y, buttonWidth - 20, buttonHeight)
                     .build());
 
             // 删除按钮
-            addDrawableChild(ButtonWidget.builder(
-                            Text.literal("✕").formatted(Formatting.RED),
+            addRenderableWidget(Button.builder(
+                            Component.literal("✕").withStyle(ChatFormatting.RED),
                             btn -> {
                                 AIModelConfig.getInstance().removeModel(index);
                                 init(); // 刷新界面
                             })
-                    .dimensions(centerX + buttonWidth / 2 - 20, y, 30, buttonHeight)
+                    .bounds(centerX + buttonWidth / 2 - 20, y, 30, buttonHeight)
                     .build());
         }
 
         // 翻页按钮（如果模型多）
         if (models.size() > maxVisible) {
             int navY = listStartY + maxVisible * spacing + 5;
-            addDrawableChild(ButtonWidget.builder(Text.translatable("aibuilder.ui.prev_page"), btn -> {
+            addRenderableWidget(Button.builder(Component.translatable("aibuilder.ui.prev_page"), btn -> {
                         scrollOffset = Math.max(0, scrollOffset - maxVisible);
                         init();
                     })
-                    .dimensions(centerX - buttonWidth - 5, navY, buttonWidth, buttonHeight)
+                    .bounds(centerX - buttonWidth - 5, navY, buttonWidth, buttonHeight)
                     .build());
-            addDrawableChild(ButtonWidget.builder(Text.translatable("aibuilder.ui.next_page"), btn -> {
+            addRenderableWidget(Button.builder(Component.translatable("aibuilder.ui.next_page"), btn -> {
                         scrollOffset = Math.min(models.size() - maxVisible, scrollOffset + maxVisible);
                         init();
                     })
-                    .dimensions(centerX + 5, navY, buttonWidth, buttonHeight)
+                    .bounds(centerX + 5, navY, buttonWidth, buttonHeight)
                     .build());
         }
 
-        // 无模型提示
-        if (models.isEmpty()) {
-            // 在 render 中显示提示
-        }
-
         // 关闭按钮
-        addDrawableChild(ButtonWidget.builder(
-                        Text.translatable("aibuilder.ui.close"),
-                        btn -> close())
-                .dimensions(centerX - 100, this.height - 30, 200, buttonHeight)
+        addRenderableWidget(Button.builder(
+                        Component.translatable("aibuilder.ui.close"),
+                        btn -> onClose())
+                .bounds(centerX - 100, this.height - 30, 200, buttonHeight)
                 .build());
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context, mouseX, mouseY, delta);
-        super.render(context, mouseX, mouseY, delta);
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        extractBackground(context, mouseX, mouseY, delta);
+        super.extractRenderState(context, mouseX, mouseY, delta);
 
         int centerX = this.width / 2;
 
         // 标题
-        context.drawCenteredTextWithShadow(this.textRenderer,
-                Text.translatable("aibuilder.config.header").formatted(Formatting.GOLD, Formatting.BOLD),
+        context.centeredText(this.font,
+                Component.translatable("aibuilder.config.header").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD),
                 centerX, 15, 0xFFFFFF);
 
         // 当前激活模型提示
         ModelConfig active = AIModelConfig.getInstance().getActiveModel();
         if (active != null) {
-            context.drawCenteredTextWithShadow(this.textRenderer,
-                    Text.translatable("aibuilder.config.current", active.getName()).formatted(Formatting.AQUA),
+            context.centeredText(this.font,
+                    Component.translatable("aibuilder.config.current", active.getName()).withStyle(ChatFormatting.AQUA),
                     centerX, this.height - 50, 0xFFFFFF);
         }
 
         // 无模型提示
         if (AIModelConfig.getInstance().getModels().isEmpty()) {
-            context.drawCenteredTextWithShadow(this.textRenderer,
-                    Text.translatable("aibuilder.config.empty").formatted(Formatting.GRAY),
+            context.centeredText(this.font,
+                    Component.translatable("aibuilder.config.empty").withStyle(ChatFormatting.GRAY),
                     centerX, this.height / 2 - 20, 0xFFFFFF);
-            context.drawCenteredTextWithShadow(this.textRenderer,
-                    Text.translatable("aibuilder.config.empty_hint").formatted(Formatting.DARK_GRAY),
+            context.centeredText(this.font,
+                    Component.translatable("aibuilder.config.empty_hint").withStyle(ChatFormatting.DARK_GRAY),
                     centerX, this.height / 2, 0xFFFFFF);
         }
     }
 
     @Override
-    public void close() {
-        if (client != null) {
-            client.setScreen(parent);
+    public void onClose() {
+        if (minecraft != null) {
+            minecraft.setScreen(parent);
         }
     }
 }

@@ -4,12 +4,12 @@ import cn.kaoyu666.aibuilder.client.ai.AIClient;
 import cn.kaoyu666.aibuilder.client.config.AIModelConfig;
 import cn.kaoyu666.aibuilder.client.config.ModelConfig;
 import cn.kaoyu666.aibuilder.client.config.ProviderType;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,13 +26,13 @@ public class AddProviderScreen extends Screen {
     private List<String> fetchedModels = new ArrayList<>();
     private String selectedModel = null;
     private boolean fetching = false;
-    private Text statusMessage = Text.empty();
-    private Formatting statusFormat = Formatting.WHITE;
+    private Component statusMessage = Component.empty();
+    private ChatFormatting statusFormat = ChatFormatting.WHITE;
 
     // 输入框
-    private TextFieldWidget nameField;
-    private TextFieldWidget customUrlField;
-    private TextFieldWidget apiKeyField;
+    private EditBox nameField;
+    private EditBox customUrlField;
+    private EditBox apiKeyField;
 
     // 输入内容状态（init() 重建控件时保留用户输入）
     private String nameText = "";
@@ -40,26 +40,25 @@ public class AddProviderScreen extends Screen {
     private String apiKeyText = "";
 
     // 按钮引用
-    private ButtonWidget fetchModelsBtn;
-    private ButtonWidget saveBtn;
-    private ButtonWidget modelSelectBtn;
+    private Button fetchModelsBtn;
+    private Button saveBtn;
+    private Button modelSelectBtn;
 
     public AddProviderScreen(Screen parent) {
-        super(Text.translatable("aibuilder.add.title"));
+        super(Component.translatable("aibuilder.add.title"));
         this.parent = parent;
     }
 
     @Override
     protected void init() {
         super.init();
-        clearChildren();
+        clearWidgets();
 
         int centerX = this.width / 2;
         int y = 35;
         int fullWidth = 260;
         int halfWidth = 120;
         int spacing = 24;
-        int labelHeight = 10;
 
         // ---- 第一步: 选择提供商 ----
         // 提供商选择按钮（每行3个）
@@ -76,17 +75,17 @@ public class AddProviderScreen extends Screen {
             int by = y + row * 22;
 
             boolean isSelected = (p == selectedProvider);
-            Text btnText = Text.literal(p.getDisplayName())
-                    .formatted(isSelected ? Formatting.GREEN : Formatting.WHITE);
+            Component btnText = Component.literal(p.getDisplayName())
+                    .withStyle(isSelected ? ChatFormatting.GREEN : ChatFormatting.WHITE);
 
-            addDrawableChild(ButtonWidget.builder(btnText, btn -> {
+            addRenderableWidget(Button.builder(btnText, btn -> {
                         selectedProvider = p;
                         fetchedModels.clear();
                         selectedModel = null;
                         nameText = "";
                         init();
                     })
-                    .dimensions(bx, by, btnW, 20)
+                    .bounds(bx, by, btnW, 20)
                     .build());
         }
 
@@ -94,85 +93,85 @@ public class AddProviderScreen extends Screen {
 
         // 自定义URL输入（无默认地址的提供商可见）
         if (selectedProvider != null && selectedProvider.needsCustomUrl()) {
-            customUrlField = new TextFieldWidget(this.textRenderer, centerX - fullWidth / 2, y, fullWidth, 20, Text.literal("API Base URL"));
+            customUrlField = new EditBox(this.font, centerX - fullWidth / 2, y, fullWidth, 20, Component.literal("API Base URL"));
             customUrlField.setMaxLength(512);
-            customUrlField.setText(this.customUrlText);
-            customUrlField.setPlaceholder(Text.translatable("aibuilder.add.url_placeholder"));
-            customUrlField.setChangedListener(s -> this.customUrlText = s);
-            addDrawableChild(customUrlField);
+            customUrlField.setValue(this.customUrlText);
+            customUrlField.setHint(Component.translatable("aibuilder.add.url_placeholder"));
+            customUrlField.setResponder(s -> this.customUrlText = s);
+            addRenderableWidget(customUrlField);
             y += spacing + 5;
         }
 
         // API Key 输入
-        apiKeyField = new TextFieldWidget(this.textRenderer, centerX - fullWidth / 2, y, fullWidth, 20, Text.literal("API Key"));
+        apiKeyField = new EditBox(this.font, centerX - fullWidth / 2, y, fullWidth, 20, Component.literal("API Key"));
         apiKeyField.setMaxLength(512);
-        apiKeyField.setText(this.apiKeyText);
-        apiKeyField.setPlaceholder(Text.translatable("aibuilder.add.apikey_placeholder"));
-        apiKeyField.setChangedListener(s -> this.apiKeyText = s);
-        addDrawableChild(apiKeyField);
+        apiKeyField.setValue(this.apiKeyText);
+        apiKeyField.setHint(Component.translatable("aibuilder.add.apikey_placeholder"));
+        apiKeyField.setResponder(s -> this.apiKeyText = s);
+        addRenderableWidget(apiKeyField);
         y += spacing;
 
         // 配置名称
-        nameField = new TextFieldWidget(this.textRenderer, centerX - fullWidth / 2, y, fullWidth, 20, Text.translatable("aibuilder.add.name_field"));
+        nameField = new EditBox(this.font, centerX - fullWidth / 2, y, fullWidth, 20, Component.translatable("aibuilder.add.name_field"));
         nameField.setMaxLength(64);
-        nameField.setPlaceholder(Text.translatable("aibuilder.add.name_placeholder"));
+        nameField.setHint(Component.translatable("aibuilder.add.name_placeholder"));
         if (!nameText.isEmpty()) {
-            nameField.setText(nameText);
+            nameField.setValue(nameText);
         } else if (selectedProvider != null) {
-            nameField.setText(selectedProvider.getDisplayName());
+            nameField.setValue(selectedProvider.getDisplayName());
         }
-        nameField.setChangedListener(s -> this.nameText = s);
-        addDrawableChild(nameField);
+        nameField.setResponder(s -> this.nameText = s);
+        addRenderableWidget(nameField);
         y += spacing + 5;
 
         // 获取模型列表按钮
-        fetchModelsBtn = ButtonWidget.builder(
-                        Text.translatable(fetching ? "aibuilder.add.fetching" : "aibuilder.add.fetch_models"),
+        fetchModelsBtn = Button.builder(
+                        Component.translatable(fetching ? "aibuilder.add.fetching" : "aibuilder.add.fetch_models"),
                         btn -> fetchModels())
-                .dimensions(centerX - fullWidth / 2, y, fullWidth, 20)
+                .bounds(centerX - fullWidth / 2, y, fullWidth, 20)
                 .build();
         fetchModelsBtn.active = selectedProvider != null && !fetching;
-        addDrawableChild(fetchModelsBtn);
+        addRenderableWidget(fetchModelsBtn);
         y += spacing + 5;
 
         // 模型选择按钮
         if (!fetchedModels.isEmpty()) {
             String modelLabel = selectedModel != null ? truncate(selectedModel, 30) : null;
-            Formatting modelFormat = selectedModel != null ? Formatting.GREEN : Formatting.YELLOW;
-            Text modelBtnText = selectedModel != null
-                    ? Text.translatable("aibuilder.add.model", modelLabel).formatted(modelFormat)
-                    : Text.translatable("aibuilder.add.model_none").formatted(modelFormat);
+            ChatFormatting modelFormat = selectedModel != null ? ChatFormatting.GREEN : ChatFormatting.YELLOW;
+            Component modelBtnText = selectedModel != null
+                    ? Component.translatable("aibuilder.add.model", modelLabel).withStyle(modelFormat)
+                    : Component.translatable("aibuilder.add.model_none").withStyle(modelFormat);
 
-            modelSelectBtn = ButtonWidget.builder(
+            modelSelectBtn = Button.builder(
                             modelBtnText,
                             btn -> {
-                                if (client != null) {
-                                    client.setScreen(new ModelSelectScreen(this, fetchedModels, model -> {
+                                if (minecraft != null) {
+                                    minecraft.setScreen(new ModelSelectScreen(this, fetchedModels, model -> {
                                         selectedModel = model;
-                                        client.setScreen(this);
+                                        minecraft.setScreen(this);
                                     }));
                                 }
                             })
-                    .dimensions(centerX - fullWidth / 2, y, fullWidth, 20)
+                    .bounds(centerX - fullWidth / 2, y, fullWidth, 20)
                     .build();
-            addDrawableChild(modelSelectBtn);
+            addRenderableWidget(modelSelectBtn);
             y += spacing;
         }
 
         // 保存按钮
-        saveBtn = ButtonWidget.builder(
-                        Text.translatable("aibuilder.add.save").formatted(Formatting.GREEN),
+        saveBtn = Button.builder(
+                        Component.translatable("aibuilder.add.save").withStyle(ChatFormatting.GREEN),
                         btn -> saveModel())
-                .dimensions(centerX - halfWidth / 2, y, halfWidth, 20)
+                .bounds(centerX - halfWidth / 2, y, halfWidth, 20)
                 .build();
         saveBtn.active = selectedProvider != null && selectedModel != null;
-        addDrawableChild(saveBtn);
+        addRenderableWidget(saveBtn);
 
         // 返回按钮
-        addDrawableChild(ButtonWidget.builder(
-                        Text.translatable("aibuilder.ui.back"),
-                        btn -> close())
-                .dimensions(10, 10, 60, 20)
+        addRenderableWidget(Button.builder(
+                        Component.translatable("aibuilder.ui.back"),
+                        btn -> onClose())
+                .bounds(10, 10, 60, 20)
                 .build());
     }
 
@@ -183,23 +182,23 @@ public class AddProviderScreen extends Screen {
         String baseUrl = selectedProvider.needsCustomUrl() ? this.customUrlText : "";
 
         fetching = true;
-        statusMessage = Text.translatable("aibuilder.add.fetching_status");
-        statusFormat = Formatting.YELLOW;
+        statusMessage = Component.translatable("aibuilder.add.fetching_status");
+        statusFormat = ChatFormatting.YELLOW;
         init();
 
         AIClient.fetchModels(selectedProvider, baseUrl, apiKey)
                 .thenAccept(models -> {
                     // UI 状态的修改和界面刷新必须在客户端主线程执行，避免与渲染线程竞争
-                    if (client != null) {
-                        client.execute(() -> {
+                    if (minecraft != null) {
+                        minecraft.execute(() -> {
                             fetching = false;
                             if (models.isEmpty()) {
-                                statusMessage = Text.translatable("aibuilder.add.fetch_empty");
-                                statusFormat = Formatting.RED;
+                                statusMessage = Component.translatable("aibuilder.add.fetch_empty");
+                                statusFormat = ChatFormatting.RED;
                             } else {
                                 fetchedModels = new ArrayList<>(models);
-                                statusMessage = Text.translatable("aibuilder.add.fetch_success", models.size());
-                                statusFormat = Formatting.GREEN;
+                                statusMessage = Component.translatable("aibuilder.add.fetch_success", models.size());
+                                statusFormat = ChatFormatting.GREEN;
                                 selectedModel = models.get(0);
                             }
                             init();
@@ -207,11 +206,11 @@ public class AddProviderScreen extends Screen {
                     }
                 })
                 .exceptionally(e -> {
-                    if (client != null) {
-                        client.execute(() -> {
+                    if (minecraft != null) {
+                        minecraft.execute(() -> {
                             fetching = false;
-                            statusMessage = Text.translatable("aibuilder.add.fetch_failed", e.getMessage());
-                            statusFormat = Formatting.RED;
+                            statusMessage = Component.translatable("aibuilder.add.fetch_failed", e.getMessage());
+                            statusFormat = ChatFormatting.RED;
                             init();
                         });
                     }
@@ -229,45 +228,45 @@ public class AddProviderScreen extends Screen {
         ModelConfig config = new ModelConfig(name, selectedProvider, baseUrl, apiKey, selectedModel);
         AIModelConfig.getInstance().addModel(config);
 
-        statusMessage = Text.translatable("aibuilder.add.saved", name);
-        statusFormat = Formatting.GREEN;
+        statusMessage = Component.translatable("aibuilder.add.saved", name);
+        statusFormat = ChatFormatting.GREEN;
 
-        if (client != null) {
-            client.setScreen(parent);
+        if (minecraft != null) {
+            minecraft.setScreen(parent);
         }
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context, mouseX, mouseY, delta);
-        super.render(context, mouseX, mouseY, delta);
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        extractBackground(context, mouseX, mouseY, delta);
+        super.extractRenderState(context, mouseX, mouseY, delta);
 
         int centerX = this.width / 2;
 
         // 标题
-        context.drawCenteredTextWithShadow(this.textRenderer,
-                Text.translatable("aibuilder.add.title").formatted(Formatting.GOLD, Formatting.BOLD),
+        context.centeredText(this.font,
+                Component.translatable("aibuilder.add.title").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD),
                 centerX, 12, 0xFFFFFF);
 
         // 步骤提示
         if (selectedProvider == null) {
-            context.drawCenteredTextWithShadow(this.textRenderer,
-                    Text.translatable("aibuilder.add.step1").formatted(Formatting.AQUA),
+            context.centeredText(this.font,
+                    Component.translatable("aibuilder.add.step1").withStyle(ChatFormatting.AQUA),
                     centerX, 25, 0xFFFFFF);
         }
 
         // 状态消息
         if (!statusMessage.getString().isEmpty()) {
-            context.drawCenteredTextWithShadow(this.textRenderer,
-                    statusMessage.copy().formatted(statusFormat),
+            context.centeredText(this.font,
+                    statusMessage.copy().withStyle(statusFormat),
                     centerX, this.height - 20, 0xFFFFFF);
         }
     }
 
     @Override
-    public void close() {
-        if (client != null) {
-            client.setScreen(parent);
+    public void onClose() {
+        if (minecraft != null) {
+            minecraft.setScreen(parent);
         }
     }
 

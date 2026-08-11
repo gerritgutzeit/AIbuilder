@@ -1,6 +1,6 @@
 package cn.kaoyu666.aibuilder.client.config;
 
-import net.minecraft.client.resource.language.I18n;
+import net.minecraft.client.resources.language.I18n;
 
 import java.util.Locale;
 
@@ -26,7 +26,7 @@ public enum ProviderType {
     }
 
     public String getDisplayName() {
-        return I18n.translate("aibuilder.provider." + name().toLowerCase(Locale.ROOT));
+        return I18n.get("aibuilder.provider." + name().toLowerCase(Locale.ROOT));
     }
 
     public String getDefaultBaseUrl() {
@@ -73,3 +73,4 @@ public enum ProviderType {
         return defaultBaseUrl.isEmpty();
     }
 }
+

@@ -1,10 +1,10 @@
 package cn.kaoyu666.aibuilder.client.gui;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -19,7 +19,7 @@ public class ModelSelectScreen extends Screen {
     private int scrollOffset = 0;
 
     public ModelSelectScreen(Screen parent, List<String> models, Consumer<String> onSelect) {
-        super(Text.translatable("aibuilder.select.title"));
+        super(Component.translatable("aibuilder.select.title"));
         this.parent = parent;
         this.models = models;
         this.onSelect = onSelect;
@@ -28,7 +28,7 @@ public class ModelSelectScreen extends Screen {
     @Override
     protected void init() {
         super.init();
-        clearChildren();
+        clearWidgets();
 
         int centerX = this.width / 2;
         int buttonWidth = 280;
@@ -41,60 +41,60 @@ public class ModelSelectScreen extends Screen {
             String model = models.get(i);
             int y = startY + (i - scrollOffset) * spacing;
 
-            addDrawableChild(ButtonWidget.builder(
-                            Text.literal(truncate(model, 45)),
+            addRenderableWidget(Button.builder(
+                            Component.literal(truncate(model, 45)),
                             btn -> {
                                 onSelect.accept(model);
                             })
-                    .dimensions(centerX - buttonWidth / 2, y, buttonWidth, buttonHeight)
+                    .bounds(centerX - buttonWidth / 2, y, buttonWidth, buttonHeight)
                     .build());
         }
 
         // 翻页
         if (models.size() > maxVisible) {
             int navY = startY + maxVisible * spacing + 5;
-            addDrawableChild(ButtonWidget.builder(Text.translatable("aibuilder.ui.prev_page"), btn -> {
+            addRenderableWidget(Button.builder(Component.translatable("aibuilder.ui.prev_page"), btn -> {
                         scrollOffset = Math.max(0, scrollOffset - maxVisible);
                         init();
                     })
-                    .dimensions(centerX - buttonWidth - 5, navY, buttonWidth, buttonHeight)
+                    .bounds(centerX - buttonWidth - 5, navY, buttonWidth, buttonHeight)
                     .build());
-            addDrawableChild(ButtonWidget.builder(Text.translatable("aibuilder.ui.next_page"), btn -> {
+            addRenderableWidget(Button.builder(Component.translatable("aibuilder.ui.next_page"), btn -> {
                         scrollOffset = Math.min(models.size() - maxVisible, scrollOffset + maxVisible);
                         init();
                     })
-                    .dimensions(centerX + 5, navY, buttonWidth, buttonHeight)
+                    .bounds(centerX + 5, navY, buttonWidth, buttonHeight)
                     .build());
         }
 
         // 返回按钮
-        addDrawableChild(ButtonWidget.builder(
-                        Text.translatable("aibuilder.ui.back"),
-                        btn -> close())
-                .dimensions(10, 10, 60, 20)
+        addRenderableWidget(Button.builder(
+                        Component.translatable("aibuilder.ui.back"),
+                        btn -> onClose())
+                .bounds(10, 10, 60, 20)
                 .build());
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context, mouseX, mouseY, delta);
-        super.render(context, mouseX, mouseY, delta);
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        extractBackground(context, mouseX, mouseY, delta);
+        super.extractRenderState(context, mouseX, mouseY, delta);
 
         int centerX = this.width / 2;
 
-        context.drawCenteredTextWithShadow(this.textRenderer,
-                Text.translatable("aibuilder.select.header").formatted(Formatting.GOLD, Formatting.BOLD),
+        context.centeredText(this.font,
+                Component.translatable("aibuilder.select.header").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD),
                 centerX, 15, 0xFFFFFF);
 
-        context.drawCenteredTextWithShadow(this.textRenderer,
-                Text.translatable("aibuilder.select.count", models.size()).formatted(Formatting.GRAY),
+        context.centeredText(this.font,
+                Component.translatable("aibuilder.select.count", models.size()).withStyle(ChatFormatting.GRAY),
                 centerX, 28, 0xFFFFFF);
     }
 
     @Override
-    public void close() {
-        if (client != null) {
-            client.setScreen(parent);
+    public void onClose() {
+        if (minecraft != null) {
+            minecraft.setScreen(parent);
         }
     }
 

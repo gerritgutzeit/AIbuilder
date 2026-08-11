@@ -6,17 +6,20 @@ import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.schematic.LitematicaSchematic;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacement;
 import fi.dy.masa.litematica.schematic.placement.SchematicPlacementManager;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.nbt.*;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.LongArrayTag;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 
-import java.io.*;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -92,7 +95,7 @@ public class SchematicHelper {
             }
 
             // 构建 Litematic NBT
-            NbtCompound nbt = buildLitematicNBT(sizeX, sizeY, sizeZ, blockMap, schematicName);
+            CompoundTag nbt = buildLitematicNBT(sizeX, sizeY, sizeZ, blockMap, schematicName);
 
             // 保存到文件
             Path schematicPath = saveSchematicToFile(nbt, schematicName);
@@ -110,10 +113,14 @@ public class SchematicHelper {
         try {
             // 处理带命名空间的 ID
             Identifier id = blockId.contains(":") ?
-                    new Identifier(blockId) : new Identifier("minecraft", blockId);
-            Block block = Registries.BLOCK.get(id);
+                    Identifier.tryParse(blockId) : Identifier.fromNamespaceAndPath("minecraft", blockId);
+            if (id == null) {
+                Aibuilder.LOGGER.warn("Unknown block: {}", blockId);
+                return null;
+            }
+            Block block = BuiltInRegistries.BLOCK.getOptional(id).orElse(null);
             if (block != Blocks.AIR || "minecraft:air".equals(blockId) || "air".equals(blockId)) {
-                return block.getDefaultState();
+                return block.defaultBlockState();
             }
             return null;
         } catch (Exception e) {
@@ -122,15 +129,15 @@ public class SchematicHelper {
         }
     }
 
-    private static NbtCompound buildLitematicNBT(int sizeX, int sizeY, int sizeZ,
+    private static CompoundTag buildLitematicNBT(int sizeX, int sizeY, int sizeZ,
                                                   Map<BlockPos, BlockState> blockMap, String name) {
-        NbtCompound root = new NbtCompound();
+        CompoundTag root = new CompoundTag();
 
         // 收集所有出现的方块状态
         List<BlockState> palette = new ArrayList<>();
-        palette.add(Blocks.AIR.getDefaultState()); // 索引0 总是空气
+        palette.add(Blocks.AIR.defaultBlockState()); // 索引0 总是空气
         Map<BlockState, Integer> paletteMap = new HashMap<>();
-        paletteMap.put(Blocks.AIR.getDefaultState(), 0);
+        paletteMap.put(Blocks.AIR.defaultBlockState(), 0);
 
         for (BlockState state : blockMap.values()) {
             if (!paletteMap.containsKey(state)) {
@@ -155,7 +162,7 @@ public class SchematicHelper {
             for (int z = 0; z < sizeZ; z++) {
                 for (int x = 0; x < sizeX; x++) {
                     BlockPos pos = new BlockPos(x, y, z);
-                    BlockState state = blockMap.getOrDefault(pos, Blocks.AIR.getDefaultState());
+                    BlockState state = blockMap.getOrDefault(pos, Blocks.AIR.defaultBlockState());
                     int paletteIdx = paletteMap.getOrDefault(state, 0);
                     packEntry(blockData, blockIndex, paletteIdx, bitsPerBlock, maxEntryValue);
                     blockIndex++;
@@ -164,49 +171,49 @@ public class SchematicHelper {
         }
 
         // 构建方块调色板 NBT
-        NbtList paletteNbt = new NbtList();
+        ListTag paletteNbt = new ListTag();
         for (BlockState state : palette) {
-            NbtCompound entry = new NbtCompound();
-            Identifier blockId = Registries.BLOCK.getId(state.getBlock());
+            CompoundTag entry = new CompoundTag();
+            Identifier blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
             entry.putString("Name", blockId.toString());
             paletteNbt.add(entry);
         }
 
         // 构建区域数据
-        NbtCompound regionData = new NbtCompound();
+        CompoundTag regionData = new CompoundTag();
         regionData.put("BlockStatePalette", paletteNbt);
-        regionData.put("BlockStates", new NbtLongArray(blockData));
-        regionData.put("Entities", new NbtList());
-        regionData.put("TileEntities", new NbtList());
-        NbtCompound pos = new NbtCompound();
+        regionData.put("BlockStates", new LongArrayTag(blockData));
+        regionData.put("Entities", new ListTag());
+        regionData.put("TileEntities", new ListTag());
+        CompoundTag pos = new CompoundTag();
         pos.putInt("x", 0);
         pos.putInt("y", 0);
         pos.putInt("z", 0);
         regionData.put("Position", pos);
-        NbtCompound size = new NbtCompound();
+        CompoundTag size = new CompoundTag();
         size.putInt("x", sizeX);
         size.putInt("y", sizeY);
         size.putInt("z", sizeZ);
         regionData.put("Size", size);
 
-        NbtCompound regions = new NbtCompound();
+        CompoundTag regions = new CompoundTag();
         regions.put(REGION_NAME, regionData);
 
         // 元数据
-        NbtCompound metadata = new NbtCompound();
+        CompoundTag metadata = new CompoundTag();
         metadata.putString("Author", "AIbuilder");
         metadata.putString("Description", name);
         metadata.putString("Name", name);
-        NbtCompound enclosingBox = new NbtCompound();
-        NbtCompound boxPos1 = new NbtCompound();
+        CompoundTag enclosingBox = new CompoundTag();
+        CompoundTag boxPos1 = new CompoundTag();
         boxPos1.putInt("x", 0); boxPos1.putInt("y", 0); boxPos1.putInt("z", 0);
-        NbtCompound boxPos2 = new NbtCompound();
+        CompoundTag boxPos2 = new CompoundTag();
         boxPos2.putInt("x", sizeX - 1); boxPos2.putInt("y", sizeY - 1); boxPos2.putInt("z", sizeZ - 1);
         enclosingBox.put("pos1", boxPos1);
         enclosingBox.put("pos2", boxPos2);
         metadata.put("EnclosingBox", enclosingBox);
-        NbtCompound regionSizes = new NbtCompound();
-        NbtCompound rs = new NbtCompound();
+        CompoundTag regionSizes = new CompoundTag();
+        CompoundTag rs = new CompoundTag();
         rs.putInt("x", sizeX); rs.putInt("y", sizeY); rs.putInt("z", sizeZ);
         regionSizes.put(REGION_NAME, rs);
         metadata.put("RegionSizes", regionSizes);
@@ -218,11 +225,12 @@ public class SchematicHelper {
 
         root.put("Metadata", metadata);
         root.put("Regions", regions);
-        root.putInt("MinecraftDataVersion", 3839); // 1.20.6
+        // 26.x 不再有世界数据版本号（版本 JSON 中已移除），此值仅作 litematic 兼容占位
+        root.putInt("MinecraftDataVersion", 3839);
         root.putInt("Version", 7);
         root.putInt("SubVersion", 0);
-        root.put("Entities", new NbtList());
-        root.put("TileEntities", new NbtList());
+        root.put("Entities", new ListTag());
+        root.put("TileEntities", new ListTag());
 
         return root;
     }
@@ -237,9 +245,9 @@ public class SchematicHelper {
         }
     }
 
-    private static Path saveSchematicToFile(NbtCompound nbt, String name) {
+    private static Path saveSchematicToFile(CompoundTag nbt, String name) {
         try {
-            Path dir = MinecraftClient.getInstance().runDirectory.toPath().resolve(SCHEMATIC_DIR);
+            Path dir = Minecraft.getInstance().gameDirectory.toPath().resolve(SCHEMATIC_DIR);
             Files.createDirectories(dir);
             String safeName = name.replaceAll("[^a-zA-Z0-9_\\-\\u4e00-\\u9fa5]", "_");
             Path filePath = dir.resolve(safeName + ".litematic");
@@ -255,19 +263,19 @@ public class SchematicHelper {
 
     private static boolean loadInLitematica(File file, String name) {
         try {
-            MinecraftClient client = MinecraftClient.getInstance();
+            Minecraft client = Minecraft.getInstance();
             if (client.player == null) return false;
 
-            LitematicaSchematic schematic = LitematicaSchematic.createFromFile(file.getParentFile(), file.getName());
+            LitematicaSchematic schematic = LitematicaSchematic.createFromFile(file.getParentFile().toPath(), file.getName());
             if (schematic == null) {
                 Aibuilder.LOGGER.error("Failed to load schematic from file: {}", file);
                 return false;
             }
 
             // 计算放置位置（玩家前方5格）
-            Direction facing = client.player.getHorizontalFacing();
-            BlockPos playerPos = client.player.getBlockPos();
-            BlockPos placementPos = playerPos.offset(facing, 5);
+            Direction facing = client.player.getDirection();
+            BlockPos playerPos = client.player.blockPosition();
+            BlockPos placementPos = playerPos.relative(facing, 5);
 
             // 创建投影放置
             SchematicPlacement placement = SchematicPlacement.createFor(schematic, placementPos, name, true, true);
@@ -315,3 +323,4 @@ public class SchematicHelper {
                 """;
     }
 }
+

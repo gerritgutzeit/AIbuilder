@@ -4,7 +4,7 @@ import cn.kaoyu666.aibuilder.Aibuilder;
 import cn.kaoyu666.aibuilder.client.config.ModelConfig;
 import cn.kaoyu666.aibuilder.client.config.ProviderType;
 import com.google.gson.*;
-import net.minecraft.client.resource.language.I18n;
+import net.minecraft.client.resources.language.I18n;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -70,13 +70,13 @@ public class AIClient {
 
                 HttpResponse<String> response = HTTP_CLIENT.send(reqBuilder.build(), HttpResponse.BodyHandlers.ofString());
                 if (response.statusCode() != 200) {
-                    return new AIResponse("", I18n.translate("aibuilder.error.http", response.statusCode(), response.body()), false);
+                    return new AIResponse("", I18n.get("aibuilder.error.http", response.statusCode(), response.body()), false);
                 }
 
                 return parseChatResponse(response.body(), model.getProviderType());
             } catch (Exception e) {
                 Aibuilder.LOGGER.error("Error sending chat request", e);
-                return new AIResponse("", I18n.translate("aibuilder.error.request_exception", e.getMessage()), false);
+                return new AIResponse("", I18n.get("aibuilder.error.request_exception", e.getMessage()), false);
             }
         });
     }
@@ -213,7 +213,7 @@ public class AIClient {
             return parsed;
         } catch (Exception e) {
             Aibuilder.LOGGER.error("Error parsing chat response", e);
-            return new AIResponse("", I18n.translate("aibuilder.error.parse_response", e.getMessage()), false);
+            return new AIResponse("", I18n.get("aibuilder.error.parse_response", e.getMessage()), false);
         }
     }
 
@@ -259,3 +259,4 @@ public class AIClient {
 
     public record AIResponse(String thinking, String content, boolean success) {}
 }
+

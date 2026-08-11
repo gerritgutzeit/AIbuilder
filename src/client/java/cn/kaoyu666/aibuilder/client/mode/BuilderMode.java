@@ -7,7 +7,9 @@ import cn.kaoyu666.aibuilder.client.config.ModelConfig;
 import cn.kaoyu666.aibuilder.client.schematic.SchematicHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.resource.language.I18n;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,32 +42,32 @@ public class BuilderMode {
 
         if (active) {
             client.player.sendMessage(
-                    Text.translatable("aibuilder.prefix").formatted(Formatting.GREEN)
-                            .append(Text.translatable("aibuilder.mode.entered").formatted(Formatting.GREEN))
-                            .append(Text.literal("\n").append(Text.translatable("aibuilder.mode.entered.hint1").formatted(Formatting.GRAY)))
-                            .append(Text.literal("\n").append(Text.translatable("aibuilder.mode.entered.hint2").formatted(Formatting.GRAY))),
+                    new TranslatableText("aibuilder.prefix").formatted(Formatting.GREEN)
+                            .append(new TranslatableText("aibuilder.mode.entered").formatted(Formatting.GREEN))
+                            .append(new LiteralText("\n").append(new TranslatableText("aibuilder.mode.entered.hint1").formatted(Formatting.GRAY)))
+                            .append(new LiteralText("\n").append(new TranslatableText("aibuilder.mode.entered.hint2").formatted(Formatting.GRAY))),
                     false
             );
 
             ModelConfig model = AIModelConfig.getInstance().getActiveModel();
             if (model == null) {
                 client.player.sendMessage(
-                        Text.translatable("aibuilder.prefix").formatted(Formatting.RED)
-                                .append(Text.translatable("aibuilder.mode.no_model").formatted(Formatting.RED)),
+                        new TranslatableText("aibuilder.prefix").formatted(Formatting.RED)
+                                .append(new TranslatableText("aibuilder.mode.no_model").formatted(Formatting.RED)),
                         false
                 );
             } else {
                 client.player.sendMessage(
-                        Text.translatable("aibuilder.prefix").formatted(Formatting.YELLOW)
-                                .append(Text.translatable("aibuilder.mode.current_model").formatted(Formatting.YELLOW))
-                                .append(Text.literal(model.toString()).formatted(Formatting.AQUA)),
+                        new TranslatableText("aibuilder.prefix").formatted(Formatting.YELLOW)
+                                .append(new TranslatableText("aibuilder.mode.current_model").formatted(Formatting.YELLOW))
+                                .append(new LiteralText(model.toString()).formatted(Formatting.AQUA)),
                         false
                 );
             }
         } else {
             client.player.sendMessage(
-                    Text.translatable("aibuilder.prefix").formatted(Formatting.YELLOW)
-                            .append(Text.translatable("aibuilder.mode.exited").formatted(Formatting.YELLOW)),
+                    new TranslatableText("aibuilder.prefix").formatted(Formatting.YELLOW)
+                            .append(new TranslatableText("aibuilder.mode.exited").formatted(Formatting.YELLOW)),
                     false
             );
         }
@@ -83,8 +85,8 @@ public class BuilderMode {
 
         if (processing.get()) {
             client.player.sendMessage(
-                    Text.translatable("aibuilder.prefix").formatted(Formatting.YELLOW)
-                            .append(Text.translatable("aibuilder.mode.processing").formatted(Formatting.YELLOW)),
+                    new TranslatableText("aibuilder.prefix").formatted(Formatting.YELLOW)
+                            .append(new TranslatableText("aibuilder.mode.processing").formatted(Formatting.YELLOW)),
                     false
             );
             return true;
@@ -93,8 +95,8 @@ public class BuilderMode {
         ModelConfig model = AIModelConfig.getInstance().getActiveModel();
         if (model == null) {
             client.player.sendMessage(
-                    Text.translatable("aibuilder.prefix").formatted(Formatting.RED)
-                            .append(Text.translatable("aibuilder.mode.configure_first").formatted(Formatting.RED)),
+                    new TranslatableText("aibuilder.prefix").formatted(Formatting.RED)
+                            .append(new TranslatableText("aibuilder.mode.configure_first").formatted(Formatting.RED)),
                     false
             );
             return true;
@@ -104,8 +106,8 @@ public class BuilderMode {
         processing.set(true);
 
         client.player.sendMessage(
-                Text.translatable("aibuilder.prefix").formatted(Formatting.GREEN)
-                        .append(Text.translatable("aibuilder.mode.generating", message).formatted(Formatting.WHITE)),
+                new TranslatableText("aibuilder.prefix").formatted(Formatting.GREEN)
+                        .append(new TranslatableText("aibuilder.mode.generating", message).formatted(Formatting.WHITE)),
                 false
         );
 
@@ -125,14 +127,14 @@ public class BuilderMode {
                             // 分段显示思考内容（避免过长）
                             String[] lines = thinkingText.split("\n");
                             client.player.sendMessage(
-                                    Text.translatable("aibuilder.prefix").formatted(Formatting.GREEN)
-                                            .append(Text.translatable("aibuilder.mode.thinking_header").formatted(Formatting.DARK_GRAY)),
+                                    new TranslatableText("aibuilder.prefix").formatted(Formatting.GREEN)
+                                            .append(new TranslatableText("aibuilder.mode.thinking_header").formatted(Formatting.DARK_GRAY)),
                                     false
                             );
                             for (String line : lines) {
                                 if (!line.trim().isEmpty()) {
                                     client.player.sendMessage(
-                                            Text.literal("  ").append(Text.literal(line).formatted(Formatting.GRAY)),
+                                            new LiteralText("  ").append(new LiteralText(line).formatted(Formatting.GRAY)),
                                             false
                                     );
                                 }
@@ -146,23 +148,23 @@ public class BuilderMode {
 
                             if (loaded) {
                                 client.player.sendMessage(
-                                        Text.translatable("aibuilder.prefix").formatted(Formatting.GREEN)
-                                                .append(Text.translatable("aibuilder.mode.build_done").formatted(Formatting.GREEN))
-                                                .append(Text.literal("\n").append(Text.translatable("aibuilder.mode.build_done.hint").formatted(Formatting.GRAY))),
+                                        new TranslatableText("aibuilder.prefix").formatted(Formatting.GREEN)
+                                                .append(new TranslatableText("aibuilder.mode.build_done").formatted(Formatting.GREEN))
+                                                .append(new LiteralText("\n").append(new TranslatableText("aibuilder.mode.build_done.hint").formatted(Formatting.GRAY))),
                                         false
                                 );
                             } else {
                                 client.player.sendMessage(
-                                        Text.translatable("aibuilder.prefix").formatted(Formatting.RED)
-                                                .append(Text.translatable("aibuilder.mode.load_failed").formatted(Formatting.RED)),
+                                        new TranslatableText("aibuilder.prefix").formatted(Formatting.RED)
+                                                .append(new TranslatableText("aibuilder.mode.load_failed").formatted(Formatting.RED)),
                                         false
                                 );
                             }
                         } else {
                             client.player.sendMessage(
-                                    Text.translatable("aibuilder.prefix").formatted(Formatting.RED)
-                                            .append(Text.translatable("aibuilder.mode.generate_failed").formatted(Formatting.RED))
-                                            .append(Text.literal("\n" + (response.content() != null ? response.content() : I18n.translate("aibuilder.mode.unknown_error"))).formatted(Formatting.GRAY)),
+                                    new TranslatableText("aibuilder.prefix").formatted(Formatting.RED)
+                                            .append(new TranslatableText("aibuilder.mode.generate_failed").formatted(Formatting.RED))
+                                            .append(new LiteralText("\n" + (response.content() != null ? response.content() : I18n.translate("aibuilder.mode.unknown_error"))).formatted(Formatting.GRAY)),
                                     false
                             );
                         }
@@ -173,8 +175,8 @@ public class BuilderMode {
                         processing.set(false);
                         if (client.player != null) {
                             client.player.sendMessage(
-                                    Text.translatable("aibuilder.prefix").formatted(Formatting.RED)
-                                            .append(Text.translatable("aibuilder.mode.request_exception", e.getMessage()).formatted(Formatting.RED)),
+                                    new TranslatableText("aibuilder.prefix").formatted(Formatting.RED)
+                                            .append(new TranslatableText("aibuilder.mode.request_exception", e.getMessage()).formatted(Formatting.RED)),
                                     false
                             );
                         }

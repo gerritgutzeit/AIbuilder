@@ -10,8 +10,18 @@ base {
     archivesName = project.archives_base_name
 }
 
+sourceSets {
+    client {
+        compileClasspath += sourceSets.main.output
+        compileClasspath += sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.runtimeClasspath
+    }
+}
+
 loom {
-    splitEnvironmentSourceSets()
+    // 1.16.x uses a merged Minecraft jar, so splitEnvironmentSourceSets()/clientOnlyMinecraftJar()
+    // are not supported. The client source set is wired up manually above.
 
     mods {
         "aibuilder" {
@@ -48,8 +58,8 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    modImplementation files("libs/litematica-fabric-1.20.6-0.18.3.jar")
-    modImplementation files("libs/malilib-fabric-1.20.6-0.19.2.jar")
+    modImplementation files("libs/litematica-fabric-1.16.5-0.0.0-dev.20210917.192300.jar")
+    modImplementation files("libs/malilib-fabric-1.16.5-0.10.0-dev.21+arne.8.jar")
     modImplementation("com.terraformersmc:modmenu:${project.modmenu_version}")
 
     // Gson for JSON parsing (compile-only, provided by Minecraft at runtime)
@@ -69,7 +79,7 @@ processResources {
     }
 }
 
-def targetJavaVersion = 21
+def targetJavaVersion = 8
 tasks.withType(JavaCompile).configureEach {
     // ensure that the encoding is set to UTF-8, no matter what the system default is
     // this fixes some edge cases with special characters not displaying correctly
@@ -93,9 +103,14 @@ java {
 }
 
 jar {
+    from sourceSets.client.output
     from("LICENSE.txt") {
         rename { "${it}_${project.archives_base_name}" }
     }
+}
+
+sourcesJar {
+    from sourceSets.client.allJava
 }
 
 // configure the maven publication

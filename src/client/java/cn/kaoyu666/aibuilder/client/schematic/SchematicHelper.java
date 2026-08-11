@@ -11,10 +11,11 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.*;
-import net.minecraft.registry.Registries;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.SharedConstants;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -111,7 +112,7 @@ public class SchematicHelper {
             // 处理带命名空间的 ID
             Identifier id = blockId.contains(":") ?
                     new Identifier(blockId) : new Identifier("minecraft", blockId);
-            Block block = Registries.BLOCK.get(id);
+            Block block = Registry.BLOCK.get(id);
             if (block != Blocks.AIR || "minecraft:air".equals(blockId) || "air".equals(blockId)) {
                 return block.getDefaultState();
             }
@@ -167,7 +168,7 @@ public class SchematicHelper {
         NbtList paletteNbt = new NbtList();
         for (BlockState state : palette) {
             NbtCompound entry = new NbtCompound();
-            Identifier blockId = Registries.BLOCK.getId(state.getBlock());
+            Identifier blockId = Registry.BLOCK.getId(state.getBlock());
             entry.putString("Name", blockId.toString());
             paletteNbt.add(entry);
         }
@@ -218,7 +219,7 @@ public class SchematicHelper {
 
         root.put("Metadata", metadata);
         root.put("Regions", regions);
-        root.putInt("MinecraftDataVersion", 3839); // 1.20.6
+        root.putInt("MinecraftDataVersion", SharedConstants.getGameVersion().getWorldVersion()); // current game data version
         root.putInt("Version", 7);
         root.putInt("SubVersion", 0);
         root.put("Entities", new NbtList());
@@ -244,7 +245,7 @@ public class SchematicHelper {
             String safeName = name.replaceAll("[^a-zA-Z0-9_\\-\\u4e00-\\u9fa5]", "_");
             Path filePath = dir.resolve(safeName + ".litematic");
 
-            NbtIo.write(nbt, filePath);
+            NbtIo.write(nbt, filePath.toFile());
             Aibuilder.LOGGER.info("Saved schematic to: {}", filePath);
             return filePath;
         } catch (Exception e) {
@@ -289,29 +290,27 @@ public class SchematicHelper {
      * 生成 AI 系统提示词
      */
     public static String getSystemPrompt() {
-        return """
-                You are a Minecraft building AI assistant. The user will describe the building they want, and you must output the building data in JSON format.
-                
-                Output format requirements (strictly follow):
-                ```json
-                {
-                  "size": {"x": width, "y": height, "z": depth},
-                  "blocks": [
-                    {"x": 0, "y": 0, "z": 0, "block": "minecraft:stone"},
-                    {"x": 1, "y": 0, "z": 0, "block": "minecraft:oak_planks"}
-                  ]
-                }
-                ```
-                
-                Rules:
-                1. All coordinates start from 0 and must stay within the size bounds
-                2. Use full Minecraft block IDs (e.g. minecraft:stone, minecraft:oak_planks)
-                3. Do not list air blocks; unlisted positions default to air
-                4. The building should be reasonable, aesthetically pleasing, and structurally stable
-                5. First briefly explain your design approach, then output the JSON data
-                6. Wrap the JSON data in a ```json``` code block
-                7. Keep the building size within 32x32x32
-                8. Gravity-affected blocks (sand, gravel) must be supported
-                """;
+        return "You are a Minecraft building AI assistant. The user will describe the building they want, and you must output the building data in JSON format.\n"
+                + "\n"
+                + "Output format requirements (strictly follow):\n"
+                + "```json\n"
+                + "{\n"
+                + "  \"size\": {\"x\": width, \"y\": height, \"z\": depth},\n"
+                + "  \"blocks\": [\n"
+                + "    {\"x\": 0, \"y\": 0, \"z\": 0, \"block\": \"minecraft:stone\"},\n"
+                + "    {\"x\": 1, \"y\": 0, \"z\": 0, \"block\": \"minecraft:oak_planks\"}\n"
+                + "  ]\n"
+                + "}\n"
+                + "```\n"
+                + "\n"
+                + "Rules:\n"
+                + "1. All coordinates start from 0 and must stay within the size bounds\n"
+                + "2. Use full Minecraft block IDs (e.g. minecraft:stone, minecraft:oak_planks)\n"
+                + "3. Do not list air blocks; unlisted positions default to air\n"
+                + "4. The building should be reasonable, aesthetically pleasing, and structurally stable\n"
+                + "5. First briefly explain your design approach, then output the JSON data\n"
+                + "6. Wrap the JSON data in a ```json``` code block\n"
+                + "7. Keep the building size within 32x32x32\n"
+                + "8. Gravity-affected blocks (sand, gravel) must be supported";
     }
 }

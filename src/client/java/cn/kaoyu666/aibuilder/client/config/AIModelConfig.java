@@ -9,6 +9,7 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class AIModelConfig {
 
     public static AIModelConfig getInstance() {
         if (instance == null) {
-            Path configDir = Path.of("config");
+            Path configDir = Paths.get("config");
             instance = new AIModelConfig(configDir);
         }
         return instance;

@@ -29,6 +29,14 @@ fabricApi {
 
 repositories {
     maven {
+        name = "AliyunPublic"
+        url = "https://maven.aliyun.com/repository/public"
+    }
+    maven {
+        name = "Nucleoid"
+        url = "https://maven.nucleoid.xyz/"
+    }
+    maven {
         name = "Terraformers"
         url = "https://maven.terraformersmc.com/"
     }

@@ -15,22 +15,30 @@ AI 驱动的 Minecraft 建筑生成模组。在聊天框中描述你想要的建
 
 ## 依赖要求
 
-| 依赖 | 版本 |
-|---|---|
-| Minecraft | 1.20.6 |
-| Fabric Loader | >= 0.19.3 |
-| Fabric API | * |
-| [Litematica](https://www.curseforge.com/minecraft/mc-mods/litematica) | >= 0.18.0 |
-| [MaLiLib](https://www.curseforge.com/minecraft/mc-mods/malilib) | >= 0.19.0 |
-| [Mod Menu](https://www.curseforge.com/minecraft/mc-mods/modmenu) | >= 10.0.0 |
+每个 Minecraft 版本对应一个独立分支,依赖版本如下:
 
-需要 Java 21。
+| Minecraft | 分支 | Fabric Loader | Java | [Litematica](https://www.curseforge.com/minecraft/mc-mods/litematica) | [MaLiLib](https://www.curseforge.com/minecraft/mc-mods/malilib) | [Mod Menu](https://www.curseforge.com/minecraft/mc-mods/modmenu) |
+|---|---|---|---|---|---|---|
+| 1.16.5 | `1.16.5` | >= 0.14.25 | 8 | >= 0.0.0-dev.20210917.192300 | >= 0.10.0-dev.21 | >= 1.16.23 |
+| 1.18.2 | `1.18.2` | >= 0.19.3 | 17 | >= 0.11.7 | >= 0.12.1 | >= 3.2.5 |
+| 1.19.4 | `1.19.4` | >= 0.19.3 | 17 | >= 0.14.7 | >= 0.15.4 | >= 6.3.1 |
+| 1.20.2 | `1.20.2` | >= 0.19.3 | 17 | >= 0.16.1 | >= 0.17.0 | >= 8.0.1 |
+| 1.20.4 | `1.20.4` | >= 0.19.3 | 17 | >= 0.17.4 | >= 0.18.3 | >= 9.2.0 |
+| 1.20.6 | `1.20.6` / `master` | >= 0.19.3 | 21 | >= 0.18.0 | >= 0.19.0 | >= 10.0.0 |
+| 1.21.4 | `1.21.4` | >= 0.19.3 | 21 | >= 0.21.7 | >= 0.23.5 | >= 13.0.4 |
+| 1.21.11 | `1.21.11` | >= 0.19.3 | 21 | >= 0.26.12 | >= 0.27.16 | >= 17.0.0 |
+| 26.1.2 | `26.1.2` | >= 0.19.3 | 25 | >= 0.27.10 | >= 0.28.9 | >= 18.0.0 |
+| 26.2 | `26.2` | >= 0.19.3 | 25 | >= 0.28.4 | >= 0.29.3 | >= 20.0.1 |
+
+所有版本均依赖 **Fabric API**(任意版本,构建时按对应版本解析)。
+
+> 注: 26.x 系列使用官方 Mojang 映射,不再需要 Yarn 映射;1.16.5 官方仅有 dev 版 Litematica/MaLiLib。
 
 ## 安装方法
 
-1. 为 Minecraft 1.20.6 安装 [Fabric Loader](https://fabricmc.net/use/)
-2. 从 [Releases](https://github.com/kaoyu555666777/AIbuilder/releases) 下载 `aibuilder-*.jar`(或自行构建,见下文)
-3. 将该 jar 与 Fabric API、Litematica、MaLiLib、Mod Menu 一起放入 `.minecraft/mods` 目录
+1. 根据你的 Minecraft 版本安装对应版本的 [Fabric Loader](https://fabricmc.net/use/)(Java 版本见上表)
+2. 从 [Releases](https://github.com/kaoyu555666777/AIbuilder/releases) 下载与你的 Minecraft 版本匹配的 `aibuilder-0.1.1-<版本号>.jar`(或自行构建,见下文)
+3. 将该 jar 与 Fabric API、对应版本的 Litematica、MaLiLib、Mod Menu 一起放入 `.minecraft/mods` 目录
 4. 启动游戏
 
 ## 使用方法
@@ -70,10 +78,11 @@ AI 驱动的 Minecraft 建筑生成模组。在聊天框中描述你想要的建
 ```bash
 git clone https://github.com/kaoyu555666777/AIbuilder.git
 cd AIbuilder
+git checkout 1.20.6   # 切换到目标版本分支(master 即 1.20.6,例如 1.16.5 / 1.18.2 / 1.19.4 / 1.21.4 / 26.2 ...)
 ./gradlew build
 ```
 
-产物位于 `build/libs/`。如需启动带该模组的开发客户端,使用 `./gradlew runClient`。
+产物位于 `build/libs/aibuilder-0.1.1-<版本号>.jar`。所有版本构建完成的 jar 也统一收集在 `dist/` 目录(该目录已被 git 忽略)。如需启动带该模组的开发客户端,使用 `./gradlew runClient`。
 
 ## 项目结构
 

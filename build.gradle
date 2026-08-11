@@ -11,6 +11,9 @@ base {
 }
 
 loom {
+    // Client-side mod only: download/remap the client jar only, faster builds
+    clientOnlyMinecraftJar()
+
     splitEnvironmentSourceSets()
 
     mods {
@@ -29,6 +32,14 @@ fabricApi {
 
 repositories {
     maven {
+        name = "AliyunPublic"
+        url = "https://maven.aliyun.com/repository/public"
+    }
+    maven {
+        name = "Nucleoid"
+        url = "https://maven.nucleoid.xyz/"
+    }
+    maven {
         name = "Terraformers"
         url = "https://maven.terraformersmc.com/"
     }
@@ -40,8 +51,8 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    modImplementation files("libs/litematica-fabric-1.20.6-0.18.3.jar")
-    modImplementation files("libs/malilib-fabric-1.20.6-0.19.2.jar")
+    modImplementation files("libs/litematica-fabric-1.21.11-0.26.12.jar")
+    modImplementation files("libs/malilib-fabric-1.21.11-0.27.16.jar")
     modImplementation("com.terraformersmc:modmenu:${project.modmenu_version}")
 
     // Gson for JSON parsing (compile-only, provided by Minecraft at runtime)
@@ -107,3 +118,4 @@ publishing {
         // retrieving dependencies.
     }
 }
+

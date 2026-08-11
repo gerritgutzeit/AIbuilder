@@ -14,6 +14,7 @@ import net.minecraft.nbt.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.SharedConstants;
 import net.minecraft.util.math.Direction;
 
 import java.io.*;
@@ -110,7 +111,7 @@ public class SchematicHelper {
         try {
             // 处理带命名空间的 ID
             Identifier id = blockId.contains(":") ?
-                    new Identifier(blockId) : new Identifier("minecraft", blockId);
+                    Identifier.of(blockId) : Identifier.of("minecraft", blockId);
             Block block = Registries.BLOCK.get(id);
             if (block != Blocks.AIR || "minecraft:air".equals(blockId) || "air".equals(blockId)) {
                 return block.getDefaultState();
@@ -218,7 +219,7 @@ public class SchematicHelper {
 
         root.put("Metadata", metadata);
         root.put("Regions", regions);
-        root.putInt("MinecraftDataVersion", 3839); // 1.20.6
+        root.putInt("MinecraftDataVersion", SharedConstants.WORLD_VERSION); // current game data version
         root.putInt("Version", 7);
         root.putInt("SubVersion", 0);
         root.put("Entities", new NbtList());
@@ -258,7 +259,7 @@ public class SchematicHelper {
             MinecraftClient client = MinecraftClient.getInstance();
             if (client.player == null) return false;
 
-            LitematicaSchematic schematic = LitematicaSchematic.createFromFile(file.getParentFile(), file.getName());
+            LitematicaSchematic schematic = LitematicaSchematic.createFromFile(file.getParentFile().toPath(), file.getName());
             if (schematic == null) {
                 Aibuilder.LOGGER.error("Failed to load schematic from file: {}", file);
                 return false;
@@ -315,3 +316,7 @@ public class SchematicHelper {
                 """;
     }
 }
+
+
+
+

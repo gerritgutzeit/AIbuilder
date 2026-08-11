@@ -2,7 +2,7 @@ package cn.kaoyu666.aibuilder.client.gui;
 
 import cn.kaoyu666.aibuilder.client.config.AIModelConfig;
 import cn.kaoyu666.aibuilder.client.config.ModelConfig;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
@@ -116,33 +116,33 @@ public class AIBuilderConfigScreen extends Screen {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context, mouseX, mouseY, delta);
-        super.render(context, mouseX, mouseY, delta);
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        renderBackground(matrices);
+        super.render(matrices, mouseX, mouseY, delta);
 
         int centerX = this.width / 2;
 
         // 标题
-        context.drawCenteredTextWithShadow(this.textRenderer,
-                Text.translatable("aibuilder.config.header").formatted(Formatting.GOLD, Formatting.BOLD),
-                centerX, 15, 0xFFFFFF);
+        Text header = Text.translatable("aibuilder.config.header").formatted(Formatting.GOLD, Formatting.BOLD);
+        this.textRenderer.drawWithShadow(matrices, header,
+                centerX - this.textRenderer.getWidth(header) / 2, 15, 0xFFFFFF);
 
         // 当前激活模型提示
         ModelConfig active = AIModelConfig.getInstance().getActiveModel();
         if (active != null) {
-            context.drawCenteredTextWithShadow(this.textRenderer,
-                    Text.translatable("aibuilder.config.current", active.getName()).formatted(Formatting.AQUA),
-                    centerX, this.height - 50, 0xFFFFFF);
+            Text current = Text.translatable("aibuilder.config.current", active.getName()).formatted(Formatting.AQUA);
+            this.textRenderer.drawWithShadow(matrices, current,
+                    centerX - this.textRenderer.getWidth(current) / 2, this.height - 50, 0xFFFFFF);
         }
 
         // 无模型提示
         if (AIModelConfig.getInstance().getModels().isEmpty()) {
-            context.drawCenteredTextWithShadow(this.textRenderer,
-                    Text.translatable("aibuilder.config.empty").formatted(Formatting.GRAY),
-                    centerX, this.height / 2 - 20, 0xFFFFFF);
-            context.drawCenteredTextWithShadow(this.textRenderer,
-                    Text.translatable("aibuilder.config.empty_hint").formatted(Formatting.DARK_GRAY),
-                    centerX, this.height / 2, 0xFFFFFF);
+            Text empty = Text.translatable("aibuilder.config.empty").formatted(Formatting.GRAY);
+            this.textRenderer.drawWithShadow(matrices, empty,
+                    centerX - this.textRenderer.getWidth(empty) / 2, this.height / 2 - 20, 0xFFFFFF);
+            Text emptyHint = Text.translatable("aibuilder.config.empty_hint").formatted(Formatting.DARK_GRAY);
+            this.textRenderer.drawWithShadow(matrices, emptyHint,
+                    centerX - this.textRenderer.getWidth(emptyHint) / 2, this.height / 2, 0xFFFFFF);
         }
     }
 

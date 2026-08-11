@@ -1,6 +1,6 @@
 package cn.kaoyu666.aibuilder.client.gui;
 
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
@@ -76,19 +76,19 @@ public class ModelSelectScreen extends Screen {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context, mouseX, mouseY, delta);
-        super.render(context, mouseX, mouseY, delta);
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        renderBackground(matrices);
+        super.render(matrices, mouseX, mouseY, delta);
 
         int centerX = this.width / 2;
 
-        context.drawCenteredTextWithShadow(this.textRenderer,
-                Text.translatable("aibuilder.select.header").formatted(Formatting.GOLD, Formatting.BOLD),
-                centerX, 15, 0xFFFFFF);
+        Text header = Text.translatable("aibuilder.select.header").formatted(Formatting.GOLD, Formatting.BOLD);
+        this.textRenderer.drawWithShadow(matrices, header,
+                centerX - this.textRenderer.getWidth(header) / 2, 15, 0xFFFFFF);
 
-        context.drawCenteredTextWithShadow(this.textRenderer,
-                Text.translatable("aibuilder.select.count", models.size()).formatted(Formatting.GRAY),
-                centerX, 28, 0xFFFFFF);
+        Text count = Text.translatable("aibuilder.select.count", models.size()).formatted(Formatting.GRAY);
+        this.textRenderer.drawWithShadow(matrices, count,
+                centerX - this.textRenderer.getWidth(count) / 2, 28, 0xFFFFFF);
     }
 
     @Override

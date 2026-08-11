@@ -4,7 +4,7 @@ import cn.kaoyu666.aibuilder.client.ai.AIClient;
 import cn.kaoyu666.aibuilder.client.config.AIModelConfig;
 import cn.kaoyu666.aibuilder.client.config.ModelConfig;
 import cn.kaoyu666.aibuilder.client.config.ProviderType;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -238,29 +238,29 @@ public class AddProviderScreen extends Screen {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context, mouseX, mouseY, delta);
-        super.render(context, mouseX, mouseY, delta);
+    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        renderBackground(matrices);
+        super.render(matrices, mouseX, mouseY, delta);
 
         int centerX = this.width / 2;
 
         // 标题
-        context.drawCenteredTextWithShadow(this.textRenderer,
-                Text.translatable("aibuilder.add.title").formatted(Formatting.GOLD, Formatting.BOLD),
-                centerX, 12, 0xFFFFFF);
+        Text title = Text.translatable("aibuilder.add.title").formatted(Formatting.GOLD, Formatting.BOLD);
+        this.textRenderer.drawWithShadow(matrices, title,
+                centerX - this.textRenderer.getWidth(title) / 2, 12, 0xFFFFFF);
 
         // 步骤提示
         if (selectedProvider == null) {
-            context.drawCenteredTextWithShadow(this.textRenderer,
-                    Text.translatable("aibuilder.add.step1").formatted(Formatting.AQUA),
-                    centerX, 25, 0xFFFFFF);
+            Text step = Text.translatable("aibuilder.add.step1").formatted(Formatting.AQUA);
+            this.textRenderer.drawWithShadow(matrices, step,
+                    centerX - this.textRenderer.getWidth(step) / 2, 25, 0xFFFFFF);
         }
 
         // 状态消息
         if (!statusMessage.getString().isEmpty()) {
-            context.drawCenteredTextWithShadow(this.textRenderer,
-                    statusMessage.copy().formatted(statusFormat),
-                    centerX, this.height - 20, 0xFFFFFF);
+            Text status = statusMessage.copy().formatted(statusFormat);
+            this.textRenderer.drawWithShadow(matrices, status,
+                    centerX - this.textRenderer.getWidth(status) / 2, this.height - 20, 0xFFFFFF);
         }
     }
 

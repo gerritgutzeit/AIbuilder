@@ -146,9 +146,9 @@ public class AddProviderScreen extends Screen {
                             modelBtnText,
                             btn -> {
                                 if (minecraft != null) {
-                                    minecraft.setScreen(new ModelSelectScreen(this, fetchedModels, model -> {
+                                    minecraft.setScreenAndShow(new ModelSelectScreen(this, fetchedModels, model -> {
                                         selectedModel = model;
-                                        minecraft.setScreen(this);
+                                        minecraft.setScreenAndShow(this);
                                     }));
                                 }
                             })
@@ -232,7 +232,7 @@ public class AddProviderScreen extends Screen {
         statusFormat = ChatFormatting.GREEN;
 
         if (minecraft != null) {
-            minecraft.setScreen(parent);
+            minecraft.setScreenAndShow(parent);
         }
     }
 
@@ -266,7 +266,7 @@ public class AddProviderScreen extends Screen {
     @Override
     public void onClose() {
         if (minecraft != null) {
-            minecraft.setScreen(parent);
+            minecraft.setScreenAndShow(parent);
         }
     }
 

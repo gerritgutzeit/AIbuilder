@@ -39,7 +39,7 @@ public class AIBuilderConfigScreen extends Screen {
                         Component.translatable("aibuilder.config.add_model"),
                         btn -> {
                             if (minecraft != null) {
-                                minecraft.setScreen(new AddProviderScreen(this));
+                                minecraft.setScreenAndShow(new AddProviderScreen(this));
                             }
                         })
                 .bounds(centerX - buttonWidth / 2, startY, buttonWidth, buttonHeight)
@@ -141,7 +141,7 @@ public class AIBuilderConfigScreen extends Screen {
     @Override
     public void onClose() {
         if (minecraft != null) {
-            minecraft.setScreen(parent);
+            minecraft.setScreenAndShow(parent);
         }
     }
 }

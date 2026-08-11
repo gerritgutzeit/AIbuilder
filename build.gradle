@@ -50,8 +50,8 @@ dependencies {
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    implementation files("libs/litematica-fabric-26.1.2-0.27.10.jar")
-    implementation files("libs/malilib-fabric-26.1.2-0.28.9.jar")
+    implementation files("libs/litematica-fabric-26.2-0.28.4.jar")
+    implementation files("libs/malilib-fabric-26.2-0.29.3.jar")
     implementation("com.terraformersmc:modmenu:${project.modmenu_version}")
 
     // Gson for JSON parsing (compile-only, provided by Minecraft at runtime)

@@ -15,22 +15,30 @@ AI-driven Minecraft building generator mod. Describe a building in chat, and AIb
 
 ## Requirements
 
-| Dependency | Version |
-|---|---|
-| Minecraft | 1.20.6 |
-| Fabric Loader | >= 0.19.3 |
-| Fabric API | * |
-| [Litematica](https://www.curseforge.com/minecraft/mc-mods/litematica) | >= 0.18.0 |
-| [MaLiLib](https://www.curseforge.com/minecraft/mc-mods/malilib) | >= 0.19.0 |
-| [Mod Menu](https://www.curseforge.com/minecraft/mc-mods/modmenu) | >= 10.0.0 |
+Each Minecraft version has its own branch, with the following dependency versions:
 
-Java 21 is required.
+| Minecraft | Branch | Fabric Loader | Java | [Litematica](https://www.curseforge.com/minecraft/mc-mods/litematica) | [MaLiLib](https://www.curseforge.com/minecraft/mc-mods/malilib) | [Mod Menu](https://www.curseforge.com/minecraft/mc-mods/modmenu) |
+|---|---|---|---|---|---|---|
+| 1.16.5 | `1.16.5` | >= 0.14.25 | 8 | >= 0.0.0-dev.20210917.192300 | >= 0.10.0-dev.21 | >= 1.16.23 |
+| 1.18.2 | `1.18.2` | >= 0.19.3 | 17 | >= 0.11.7 | >= 0.12.1 | >= 3.2.5 |
+| 1.19.4 | `1.19.4` | >= 0.19.3 | 17 | >= 0.14.7 | >= 0.15.4 | >= 6.3.1 |
+| 1.20.2 | `1.20.2` | >= 0.19.3 | 17 | >= 0.16.1 | >= 0.17.0 | >= 8.0.1 |
+| 1.20.4 | `1.20.4` | >= 0.19.3 | 17 | >= 0.17.4 | >= 0.18.3 | >= 9.2.0 |
+| 1.20.6 | `1.20.6` / `master` | >= 0.19.3 | 21 | >= 0.18.0 | >= 0.19.0 | >= 10.0.0 |
+| 1.21.4 | `1.21.4` | >= 0.19.3 | 21 | >= 0.21.7 | >= 0.23.5 | >= 13.0.4 |
+| 1.21.11 | `1.21.11` | >= 0.19.3 | 21 | >= 0.26.12 | >= 0.27.16 | >= 17.0.0 |
+| 26.1.2 | `26.1.2` | >= 0.19.3 | 25 | >= 0.27.10 | >= 0.28.9 | >= 18.0.0 |
+| 26.2 | `26.2` | >= 0.19.3 | 25 | >= 0.28.4 | >= 0.29.3 | >= 20.0.1 |
+
+All versions depend on **Fabric API** (any version; the matching one is resolved at build time).
+
+> Note: The 26.x line uses official Mojang mappings and no longer needs Yarn mappings; for 1.16.5 only dev builds of Litematica/MaLiLib are available.
 
 ## Installation
 
-1. Install [Fabric Loader](https://fabricmc.net/use/) for Minecraft 1.20.6
-2. Download `aibuilder-*.jar` from [Releases](https://github.com/kaoyu555666777/AIbuilder/releases) (or build it yourself, see below)
-3. Put the jar together with Fabric API, Litematica, MaLiLib, and Mod Menu into your `.minecraft/mods` folder
+1. Install [Fabric Loader](https://fabricmc.net/use/) for your Minecraft version (see the table above for the required Java version)
+2. Download the `aibuilder-0.1.1-<version>.jar` matching your Minecraft version from [Releases](https://github.com/kaoyu555666777/AIbuilder/releases) (or build it yourself, see below)
+3. Put the jar together with Fabric API and the matching Litematica, MaLiLib, and Mod Menu versions into your `.minecraft/mods` folder
 4. Launch the game
 
 ## Usage
@@ -70,10 +78,11 @@ Model configurations are stored in `config/aibuilder_models.json`.
 ```bash
 git clone https://github.com/kaoyu555666777/AIbuilder.git
 cd AIbuilder
+git checkout 1.20.6   # Switch to the branch of your target version (master is 1.20.6; e.g. 1.16.5 / 1.18.2 / 1.19.4 / 1.21.4 / 26.2 ...)
 ./gradlew build
 ```
 
-The output jar is in `build/libs/`. To launch a development client with the mod, use `./gradlew runClient`.
+The output jar is at `build/libs/aibuilder-0.1.1-<version>.jar`. Ready-built jars for every version are also collected in the `dist/` directory (which is git-ignored). To launch a development client with the mod, use `./gradlew runClient`.
 
 ## Project Structure
 

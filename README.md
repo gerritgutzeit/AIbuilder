@@ -11,7 +11,7 @@ AI-driven Minecraft building generator mod. Describe a building in chat, and AIb
 - **Multi-provider support** — Works with many AI providers, plus any OpenAI-compatible or Anthropic-compatible endpoint (self-hosted, relays, etc.)
 - **In-game configuration UI** — Add, remove, and switch model configurations through Mod Menu, including fetching the model list from a provider
 - **Thinking process display** — Shows the model's reasoning output (when supported) in chat before the building is placed
-- **32 languages** — Follows your Minecraft language setting (English by default), including `zh_cn`, `zh_tw`, `ja_jp`, `ko_kr`, `ru_ru`, `de_de`, `fr_fr`, `es_es`, `lzh`, and more
+- **32 languages** — Follows your Minecraft language setting (English by default), including Chinese Simplified, Chinese Traditional, Japanese, Korean, Russian, German, French, Spanish, Classical Chinese, and more
 
 ## Requirements
 
